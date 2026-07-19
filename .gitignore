@@ -1,0 +1,19 @@
+# Xcode / build products (project is generated via XcodeGen, not committed)
+*.xcodeproj
+*.xcworkspace
+DerivedData/
+build/
+xcuserdata/
+
+# Swift Package Manager
+.build/
+.swiftpm/
+Package.resolved
+
+# macOS
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
+.claude/
