@@ -11,7 +11,10 @@ struct CodableRoundTripTests {
 
         #expect(decoded.workout.id == workout.id)
         #expect(decoded.workout.name == workout.name)
-        #expect(decoded.workout.expandedSteps() == workout.expandedSteps())
+        // Compare the authored blocks, not `expandedSteps()` — expansion
+        // mints a fresh id per generated step by design (see HIITBlock),
+        // so two separate calls are never `==` even for the same workout.
+        #expect(decoded.workout.blocks == workout.blocks)
         #expect(decoded.schemaVersion == WorkoutFile.currentSchemaVersion)
     }
 

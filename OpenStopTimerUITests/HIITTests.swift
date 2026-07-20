@@ -15,8 +15,8 @@ final class HIITTests: UITestCase {
     }
 
     /// Creates a two-step workout (Work, then Rest) via the editor and saves
-    /// it, returning to the library. The default new-workout already has one
-    /// Work step, so this exercises rename, "add step via menu", and save.
+    /// it, returning to the library. New workouts start empty, so this
+    /// exercises rename, "add step via menu" (twice), and save.
     @discardableResult
     private func createWorkout(named name: String) -> XCUIElement {
         openHIITLibrary()
@@ -26,6 +26,8 @@ final class HIITTests: UITestCase {
         XCTAssertTrue(nameField.waitForExistence(timeout: 20))
         replaceText(in: nameField, with: name)
 
+        app.buttons["hiitEditor.addMenu"].tap()
+        app.buttons["hiitEditor.addWorkStep"].tap()
         app.buttons["hiitEditor.addMenu"].tap()
         app.buttons["hiitEditor.addRestStep"].tap()
 
@@ -72,10 +74,62 @@ final class HIITTests: UITestCase {
         XCTAssertTrue(element("hiitLibrary.workoutRow.UI Test Tabata").exists)
     }
 
+    /// Exercises the quick interval-creation flow: tapping "Add Interval"
+    /// auto-opens its editor sheet pre-filled with a sensible 10-round
+    /// work/rest default, bumping Sets to 3 turns it into "3x10", and the
+    /// player shows live "SET x/y · ROUND x/y" progress while running.
+    func testCreateIntervalWorkoutWithSetsShowsRoundProgressWhilePlaying() {
+        openHIITLibrary()
+        app.buttons["hiitLibrary.addButton"].tap()
+
+        let nameField = app.textFields["hiitEditor.nameField"]
+        XCTAssertTrue(nameField.waitForExistence(timeout: 20))
+        replaceText(in: nameField, with: "UI Test 3x10")
+
+        app.buttons["hiitEditor.addRoundGroup"].tap()
+
+        // Adding an interval auto-opens its editor sheet.
+        let doneButton = app.buttons["blockEditor.doneButton"]
+        XCTAssertTrue(doneButton.waitForExistence(timeout: 20), "Adding an interval should auto-open its editor")
+
+        let roundsStepper = stepper(labeled: "Rounds:")
+        XCTAssertTrue(roundsStepper.waitForExistence(timeout: 20))
+        XCTAssertEqual(roundsStepper.label, "Rounds: 10", "New interval should default to 10 rounds")
+
+        // A SwiftUI Stepper's own accessibilityIdentifier gets a
+        // "-Increment"/"-Decrement" suffix on its two child buttons.
+        let setsStepper = stepper(labeled: "Sets:")
+        XCTAssertTrue(setsStepper.waitForExistence(timeout: 10))
+        let incrementSets = setsStepper.buttons["blockEditor.setsStepper-Increment"]
+        XCTAssertTrue(incrementSets.waitForExistence(timeout: 5))
+        incrementSets.tap() // 1 -> 2
+        incrementSets.tap() // 2 -> 3
+        XCTAssertEqual(setsStepper.label, "Sets: 3")
+
+        doneButton.tap()
+
+        let saveButton = app.buttons["hiitEditor.saveButton"]
+        XCTAssertTrue(saveButton.isEnabled)
+        saveButton.tap()
+
+        let row = element("hiitLibrary.workoutRow.UI Test 3x10")
+        XCTAssertTrue(row.waitForExistence(timeout: 20))
+        row.tap()
+
+        XCTAssertTrue(app.navigationBars["UI Test 3x10"].waitForExistence(timeout: 20))
+        app.buttons["playerControls.primary"].tap()
+
+        let progress = app.staticTexts["currentNextPanel.progressText"]
+        XCTAssertTrue(progress.waitForExistence(timeout: 20))
+        XCTAssertEqual(progress.label, "SET 1/3 · ROUND 1/10")
+    }
+
     func testSwipeToDeleteRemovesWorkout() {
         let row = createWorkout(named: "UI Test Deletable")
         row.swipeLeft()
-        let deleteButton = row.buttons["Delete"]
+        // The revealed swipe-action button isn't a descendant of the row's
+        // own (now-stale) element reference — look it up fresh, globally.
+        let deleteButton = app.buttons["Delete"]
         XCTAssertTrue(deleteButton.waitForExistence(timeout: 20))
         deleteButton.tap()
         XCTAssertFalse(element("hiitLibrary.workoutRow.UI Test Deletable").exists)

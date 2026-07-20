@@ -45,6 +45,21 @@ struct HIITLibraryView: View {
                     ShareLink(item: workout, preview: SharePreview(workout.name))
                         .tint(.green)
                 }
+                .contextMenu {
+                    Button { editingWorkout = workout } label: {
+                        Label("Edit", systemImage: "pencil")
+                    }
+                    Button { model.duplicate(workout) } label: {
+                        Label("Duplicate", systemImage: "plus.square.on.square")
+                    }
+                    ShareLink(item: workout, preview: SharePreview(workout.name)) {
+                        Label("Export…", systemImage: "square.and.arrow.up")
+                    }
+                    Divider()
+                    Button(role: .destructive) { model.delete(workout) } label: {
+                        Label("Delete", systemImage: "trash")
+                    }
+                }
             }
         }
         .navigationTitle("HIIT Workouts")
@@ -54,9 +69,10 @@ struct HIITLibraryView: View {
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button {
-                    editingWorkout = HIITWorkout(name: "New Workout", blocks: [
-                        .step(WorkoutStep(name: "Work", kind: .work, duration: 30))
-                    ])
+                    // Start empty: the editor's "Add an Interval" empty-state
+                    // guides straight into the fast round/set creation flow,
+                    // rather than presenting a mystery pre-filled step.
+                    editingWorkout = HIITWorkout(name: "New Workout")
                 } label: {
                     Image(systemName: "plus")
                 }

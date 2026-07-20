@@ -10,6 +10,9 @@ struct CurrentNextPanel: View {
     let currentRemaining: TimeInterval
     let nextName: String?
     let nextColor: Color?
+    /// e.g. "ROUND 3/10" or "SET 2/3 · ROUND 4/10" — nil when the current
+    /// step isn't part of a round group (warmup/cooldown/single steps).
+    var progressText: String?
     var ratio: Double = 0.75
     var fontScale: Double = 1.0
 
@@ -43,6 +46,15 @@ struct CurrentNextPanel: View {
                 BigTimeText(interval: currentRemaining, fontScale: fontScale)
                     .foregroundStyle(.white)
                     .accessibilityIdentifier("currentNextPanel.currentRemaining")
+                if let progressText {
+                    Text(progressText)
+                        .font(.system(size: 16 * fontScale, weight: .bold, design: .rounded))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 4)
+                        .background(.white.opacity(0.2), in: Capsule())
+                        .accessibilityIdentifier("currentNextPanel.progressText")
+                }
             }
             .padding()
         }

@@ -13,16 +13,31 @@ struct BlockSummaryRow: View {
                 Spacer()
                 Text("\(Int(step.duration))s").foregroundStyle(.secondary)
             }
+
         case .roundGroup(let group):
-            VStack(alignment: .leading, spacing: 2) {
-                Text(group.name ?? "\(group.rounds) Rounds")
+            VStack(alignment: .leading, spacing: 3) {
+                Text(group.name?.isEmpty == false ? group.name! : loopDescription(group))
                     .fontWeight(.semibold)
-                Text(group.exercises.map(\.name).joined(separator: ", "))
+                Text(exerciseSummary(group))
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
             }
         }
+    }
+
+    private func loopDescription(_ group: HIITBlock.RoundGroup) -> String {
+        group.sets > 1 ? "\(group.sets) sets \u{00d7} \(group.rounds) rounds" : "\(group.rounds) rounds"
+    }
+
+    private func exerciseSummary(_ group: HIITBlock.RoundGroup) -> String {
+        let exercises = group.exercises
+            .map { "\($0.name) \(Int($0.duration))s" }
+            .joined(separator: " / ")
+        if let rest = group.restBetweenRounds {
+            return "\(exercises) · Rest \(Int(rest.duration))s"
+        }
+        return exercises
     }
 }
 
@@ -39,12 +54,20 @@ struct BlockEditorSheet: View {
                 roundGroupEditor
             }
         }
-        .navigationTitle("Edit Step")
+        .navigationTitle(navigationTitle)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
                 Button("Done") { dismiss() }
+                    .accessibilityIdentifier("blockEditor.doneButton")
             }
+        }
+    }
+
+    private var navigationTitle: String {
+        switch block {
+        case .step: "Edit Step"
+        case .roundGroup: "Edit Interval"
         }
     }
 
@@ -69,6 +92,7 @@ private struct StepFields: View {
     var body: some View {
         Section("Details") {
             TextField("Name", text: $step.name)
+                .accessibilityIdentifier("blockEditor.stepNameField")
             Picker("Type", selection: $step.kind) {
                 ForEach(PhaseKind.allCases) { kind in
                     Text(kind.displayName).tag(kind)
@@ -83,8 +107,12 @@ private struct RoundGroupFields: View {
     @Binding var group: HIITBlock.RoundGroup
 
     var body: some View {
-        Section("Rounds") {
-            Stepper("Rounds: \(group.rounds)", value: $group.rounds, in: 1...50)
+        Section("Name") {
+            TextField(
+                "Optional, e.g. \"Sprints\"",
+                text: Binding(get: { group.name ?? "" }, set: { group.name = $0.isEmpty ? nil : $0 })
+            )
+            .accessibilityIdentifier("blockEditor.groupNameField")
         }
 
         Section("Exercises") {
@@ -94,21 +122,49 @@ private struct RoundGroupFields: View {
                     Stepper("Duration: \(Int(exercise.duration))s", value: $exercise.duration, in: 1...600, step: 5)
                 }
             }
-            .onDelete { group.exercises.remove(atOffsets: $0) }
+            .onDelete { offsets in
+                // Always leave at least one exercise — a round group with
+                // none produces zero playable steps.
+                guard group.exercises.count > offsets.count else { return }
+                group.exercises.remove(atOffsets: offsets)
+            }
 
             Button("Add Exercise") {
                 group.exercises.append(
                     WorkoutStep(name: "Exercise \(group.exercises.count + 1)", kind: .work, duration: 30)
                 )
             }
+            .accessibilityIdentifier("blockEditor.addExercise")
         }
 
-        Section("Rest Between Exercises") {
-            RestToggleFields(rest: $group.restBetweenExercises, defaultDuration: 10)
+        if group.exercises.count > 1 {
+            Section("Rest Between Exercises") {
+                RestToggleFields(rest: $group.restBetweenExercises, defaultDuration: 10)
+            }
+        }
+
+        Section("Rounds") {
+            Stepper("Rounds: \(group.rounds)", value: $group.rounds, in: 1...50)
+                .accessibilityIdentifier("blockEditor.roundsStepper")
         }
 
         Section("Rest Between Rounds") {
             RestToggleFields(rest: $group.restBetweenRounds, defaultDuration: 20)
+        }
+
+        Section {
+            Stepper("Sets: \(group.sets)", value: $group.sets, in: 1...20)
+                .accessibilityIdentifier("blockEditor.setsStepper")
+        } header: {
+            Text("Sets")
+        } footer: {
+            Text("Repeats the whole block of rounds again — e.g. Rounds: 10, Sets: 3 plays \"3x10\".")
+        }
+
+        if group.sets > 1 {
+            Section("Rest Between Sets") {
+                RestToggleFields(rest: $group.restBetweenSets, defaultDuration: 60)
+            }
         }
     }
 }
@@ -125,6 +181,10 @@ private struct RestToggleFields: View {
             }
         ))
         if rest != nil {
+            TextField(
+                "Name",
+                text: Binding(get: { rest?.name ?? "Rest" }, set: { rest?.name = $0 })
+            )
             Stepper(
                 "Duration: \(Int(rest?.duration ?? defaultDuration))s",
                 value: Binding(

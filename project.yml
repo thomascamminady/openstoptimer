@@ -31,6 +31,10 @@ targets:
         GENERATE_INFOPLIST_FILE: NO
         INFOPLIST_FILE: OpenStopTimer/Supporting/Info.plist
         ENABLE_PREVIEWS: YES
+        # Automatic signing: to run on a physical iPhone, open the target's
+        # Signing & Capabilities tab in Xcode and pick your personal team —
+        # no paid Apple Developer account required for on-device testing.
+        CODE_SIGN_STYLE: Automatic
     dependencies:
       - package: OpenStopTimerKit
 

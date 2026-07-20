@@ -29,6 +29,35 @@ class UITestCase: XCTestCase {
         element(containerIdentifier).pickerWheels.firstMatch
     }
 
+    /// Finds a `Stepper` by its visible label prefix (e.g. "Sets:"). Its
+    /// +/- controls are child buttons identified as
+    /// "<stepperIdentifier>-Increment"/"-Decrement", with labels like
+    /// "Sets: 1, Increment" — not the bare "Increment"/"Decrement" you'd
+    /// naively guess.
+    func stepper(labeled prefix: String) -> XCUIElement {
+        app.steppers.matching(NSPredicate(format: "label BEGINSWITH %@", prefix)).firstMatch
+    }
+
+    /// A `Toggle` inside a `Form` row exposes one accessibility element
+    /// spanning the full row, but `.tap()`'s default center-point tap can
+    /// land on non-interactive padding rather than the switch — tapping
+    /// near the trailing edge (where the switch control actually renders)
+    /// is what reliably registers.
+    func tapSwitch(_ element: XCUIElement) {
+        element.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.5)).tap()
+    }
+
+    /// `Form`/`List` lazily instantiate off-screen rows, so a target further
+    /// down than the current scroll position may not exist in the
+    /// accessibility tree yet — swipe up until it does (or give up).
+    func scrollDownUntilVisible(_ element: XCUIElement, maxSwipes: Int = 8) {
+        var attempts = 0
+        while !element.exists, attempts < maxSwipes {
+            app.swipeUp()
+            attempts += 1
+        }
+    }
+
     /// Navigates Home -> the named mode card, asserting the destination's
     /// navigation title appears.
     @discardableResult
