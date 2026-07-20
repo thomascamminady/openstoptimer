@@ -105,8 +105,12 @@ struct HIITEditorView: View {
             }
             .accessibilityIdentifier("hiitEditor.addMenu")
         }
-        .listRowInsets(EdgeInsets())
-        .padding(.vertical, 12)
+        // Deliberately no listRowInsets override here — that previously
+        // zeroed the leading/trailing insets too, so the buttons sat flush
+        // against the section's edges while every sibling row (Name field,
+        // footer text, Steps rows) kept the normal margin. Just add a touch
+        // of extra vertical breathing room on top of the default insets.
+        .padding(.vertical, 4)
         .frame(maxWidth: .infinity)
     }
 
