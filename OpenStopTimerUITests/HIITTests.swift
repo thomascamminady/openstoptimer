@@ -44,13 +44,16 @@ final class HIITTests: UITestCase {
         let row = createWorkout(named: "UI Test Tabata")
         row.tap()
 
-        XCTAssertTrue(app.navigationBars["UI Test Tabata"].waitForExistence(timeout: 20))
+        // The player has no navigation title (that space is reserved for the
+        // countdown instead) — the workout name still shows on the
+        // not-yet-started summary screen, so check that.
+        XCTAssertTrue(app.staticTexts["UI Test Tabata"].waitForExistence(timeout: 20))
 
         // Not started yet: summary list + a Start (play) button, no skip controls.
         XCTAssertFalse(app.buttons["playerControls.skipForward"].exists)
         app.buttons["playerControls.primary"].tap()
 
-        let currentName = app.staticTexts["currentNextPanel.currentName"]
+        let currentName = app.staticTexts["currentStep.name"]
         XCTAssertTrue(currentName.waitForExistence(timeout: 20))
         XCTAssertEqual(currentName.label, "WORK")
 
@@ -116,12 +119,26 @@ final class HIITTests: UITestCase {
         XCTAssertTrue(row.waitForExistence(timeout: 20))
         row.tap()
 
-        XCTAssertTrue(app.navigationBars["UI Test 3x10"].waitForExistence(timeout: 20))
+        XCTAssertTrue(app.staticTexts["UI Test 3x10"].waitForExistence(timeout: 20))
         app.buttons["playerControls.primary"].tap()
 
-        let progress = app.staticTexts["currentNextPanel.progressText"]
+        let progress = app.staticTexts["currentStep.progressText"]
         XCTAssertTrue(progress.waitForExistence(timeout: 20))
         XCTAssertEqual(progress.label, "SET 1/3 · ROUND 1/10")
+
+        // The upcoming strip previews a few steps ahead, and a Work chip
+        // among them shows its own round number.
+        XCTAssertTrue(element("upcomingStrip").waitForExistence(timeout: 10))
+        let upcomingWorkChip = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "label CONTAINS 'R2/10'"))
+            .firstMatch
+        XCTAssertTrue(upcomingWorkChip.waitForExistence(timeout: 10), "An upcoming Work chip should preview its round number")
+
+        // Round progress is only shown on the *active* display while a work
+        // step is playing — skipping into the Rest step should hide it.
+        app.buttons["playerControls.skipForward"].tap()
+        Thread.sleep(forTimeInterval: 1)
+        XCTAssertFalse(app.staticTexts["currentStep.progressText"].exists, "Round badge should be hidden during rest")
     }
 
     func testSwipeToDeleteRemovesWorkout() {

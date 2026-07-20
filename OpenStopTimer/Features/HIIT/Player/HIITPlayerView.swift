@@ -8,6 +8,8 @@ struct HIITPlayerView: View {
     @State private var model: HIITPlayerModel
     @State private var isEditingWorkout = false
 
+    private let upcomingLookahead = 3
+
     init(workout: HIITWorkout, appearance: AppearanceConfig) {
         _model = State(initialValue: HIITPlayerModel(workout: workout, appearance: appearance))
     }
@@ -28,7 +30,9 @@ struct HIITPlayerView: View {
                 )
             }
         }
-        .navigationTitle(model.workout.name)
+        // No workout-name title — every pixel here is screen real estate
+        // that matters for the countdown, especially in landscape.
+        .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
         .keepScreenAwake(while: model.isRunning)
         .onChange(of: scenePhase) { _, newValue in
@@ -63,35 +67,54 @@ struct HIITPlayerView: View {
         if model.isFinished {
             finishedView
         } else if let current = model.currentStep, model.hasStarted {
-            VStack(spacing: 0) {
+            VStack(spacing: 8) {
                 progressBar
-                Text("Step \(model.currentStepIndex + 1) of \(model.steps.count)")
-                    .font(.system(.footnote, design: .rounded, weight: .semibold))
-                    .foregroundStyle(.secondary)
-                    .padding(.vertical, 4)
-                    .accessibilityIdentifier("hiitPlayer.stepCounter")
-                CurrentNextPanel(
-                    currentName: current.name,
-                    currentColor: current.color.color,
-                    currentRemaining: model.displayedRemainingInStep,
-                    nextName: model.nextStep?.name,
-                    nextColor: model.nextStep?.color.color,
-                    progressText: progressText(for: current),
-                    ratio: model.appearance.currentNextRatio,
+                CurrentStepView(
+                    name: current.name,
+                    color: current.color.color,
+                    remaining: model.displayedRemainingInStep,
+                    progressText: activeProgressText(for: current),
                     fontScale: model.appearance.fontScale
                 )
+                if !upcomingItems.isEmpty {
+                    UpcomingStepsStrip(items: upcomingItems)
+                        .padding(.horizontal, 12)
+                        .padding(.bottom, 8)
+                }
             }
         } else {
             summaryView
         }
     }
 
-    private func progressText(for step: WorkoutStep) -> String? {
-        guard let progress = step.roundProgress else { return nil }
+    /// Shown on the big current-step display — only while a work step is
+    /// active; during rest it's suppressed since rest isn't itself a round.
+    private func activeProgressText(for step: WorkoutStep) -> String? {
+        guard step.kind == .work, let progress = step.roundProgress else { return nil }
         if progress.totalSets > 1 {
             return "SET \(progress.set)/\(progress.totalSets) · ROUND \(progress.round)/\(progress.totalRounds)"
         }
         return "ROUND \(progress.round)/\(progress.totalRounds)"
+    }
+
+    /// Shown on an upcoming-step chip — a work chip previews its round
+    /// number (e.g. "R2/10") so mid-rest you can see what's coming.
+    private func chipProgressText(for step: WorkoutStep) -> String? {
+        guard step.kind == .work, let progress = step.roundProgress else { return nil }
+        return "R\(progress.round)/\(progress.totalRounds)"
+    }
+
+    private var upcomingItems: [UpcomingStepsStrip.Item] {
+        let upcoming = model.steps[(model.currentStepIndex + 1)...].prefix(upcomingLookahead)
+        return upcoming.map { step in
+            UpcomingStepsStrip.Item(
+                id: step.id,
+                name: step.name,
+                color: step.color.color,
+                duration: step.duration,
+                roundText: chipProgressText(for: step)
+            )
+        }
     }
 
     private var progressBar: some View {
@@ -106,6 +129,8 @@ struct HIITPlayerView: View {
                 }
         }
         .frame(height: 4)
+        .accessibilityIdentifier("hiitPlayer.progressBar")
+        .accessibilityValue("Step \(model.currentStepIndex + 1) of \(model.steps.count)")
     }
 
     private var summaryView: some View {

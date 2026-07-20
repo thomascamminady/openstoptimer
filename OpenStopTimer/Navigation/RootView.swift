@@ -3,12 +3,18 @@ import OpenStopTimerKit
 
 struct RootView: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
     let appState: AppState
     @State private var selectedDestination: AppDestination?
 
     var body: some View {
         Group {
-            if horizontalSizeClass == .regular {
+            // Both size classes regular means an actual iPad (in either
+            // orientation). A big iPhone in landscape is regular-width but
+            // *compact*-height — giving it the sidebar too left the timer
+            // screens fighting a sidebar column for width on an already
+            // short screen, which is what made landscape feel broken.
+            if horizontalSizeClass == .regular, verticalSizeClass == .regular {
                 NavigationSplitView {
                     List(selection: $selectedDestination) {
                         ForEach(AppDestination.allCases) { destination in
