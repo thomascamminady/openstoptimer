@@ -54,22 +54,14 @@ private struct ModeTile: View {
     let destination: AppDestination
 
     var body: some View {
-        VStack(spacing: 16) {
-            Image(systemName: destination.systemImage)
-                .font(.system(size: 48, weight: .semibold))
-            VStack(spacing: 4) {
-                Text(destination.title)
-                    .font(.title2.bold())
-                    .multilineTextAlignment(.center)
-                Text(destination.subtitle)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-            }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 24))
-        .contentShape(RoundedRectangle(cornerRadius: 24))
+        Text(destination.title)
+            .font(.title.bold())
+            .multilineTextAlignment(.center)
+            .minimumScaleFactor(0.5)
+            .padding()
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 24))
+            .contentShape(RoundedRectangle(cornerRadius: 24))
     }
 }
 

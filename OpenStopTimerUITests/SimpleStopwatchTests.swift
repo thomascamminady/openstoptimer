@@ -1,7 +1,7 @@
 import XCTest
 
 final class SimpleStopwatchTests: UITestCase {
-    func testStartPauseResumeAndReset() {
+    func testStartPauseResume() {
         openMode(cardIdentifier: "home.card.simpleStopwatch", expectedTitle: "Simple Stopwatch")
 
         let display = element("simpleStopwatch.display")
@@ -17,8 +17,8 @@ final class SimpleStopwatchTests: UITestCase {
         Thread.sleep(forTimeInterval: 1.0)
         XCTAssertEqual(display.value as? String, frozenValue, "Paused stopwatch must not keep counting")
 
-        app.buttons["playerControls.reset"].tap()
-        XCTAssertEqual(display.value as? String, "00:00.0")
+        // There's no reset button — leaving and reopening the screen is how
+        // you get back to a fresh stopwatch.
         XCTAssertFalse(app.buttons["playerControls.reset"].exists)
     }
 }

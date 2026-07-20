@@ -15,15 +15,12 @@ final class SimpleTimerTests: UITestCase {
         app.buttons["playerControls.primary"].tap()
         XCTAssertTrue(element("simpleTimer.display").waitForExistence(timeout: 3))
 
-        // Reset button should appear once started.
-        XCTAssertTrue(app.buttons["playerControls.reset"].waitForExistence(timeout: 3))
-
         waitForValue("simpleTimer.display", toEqual: "00:00", timeout: 5)
 
-        // Reset should take us back to the duration picker.
-        app.buttons["playerControls.reset"].tap()
+        // There's no separate reset button — tapping primary again once
+        // finished dismisses the countdown and returns to the picker.
+        app.buttons["playerControls.primary"].tap()
         XCTAssertTrue(pickerWheel("simpleTimer.secondsPicker").waitForExistence(timeout: 3))
-        XCTAssertFalse(app.buttons["playerControls.reset"].exists)
     }
 
     func testPauseFreezesTheCountdown() {

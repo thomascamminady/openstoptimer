@@ -13,7 +13,7 @@ final class HomeNavigationTests: UITestCase {
         openMode(cardIdentifier: "home.card.lapStopwatch", expectedTitle: "Lap Stopwatch")
         app.navigationBars.buttons.element(boundBy: 0).tap()
 
-        openMode(cardIdentifier: "home.card.hiit", expectedTitle: "HIIT Workouts")
+        openMode(cardIdentifier: "home.card.hiit", expectedTitle: "Advanced Workouts")
         app.navigationBars.buttons.element(boundBy: 0).tap()
 
         XCTAssertTrue(app.navigationBars["OpenStopTimer"].waitForExistence(timeout: 5))

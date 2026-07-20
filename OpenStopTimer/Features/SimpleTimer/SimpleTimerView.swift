@@ -30,10 +30,14 @@ struct SimpleTimerView: View {
             display
         } controls: {
             PlayerControls(
-                hasStarted: model.hasStarted,
+                // Once finished, fall back to the "not started" look (green
+                // play icon) — with no separate reset button, tapping it
+                // is how you dismiss a finished countdown and get back to
+                // the duration picker.
+                hasStarted: model.hasStarted && !model.isFinished,
                 isPaused: model.isPaused,
-                onPrimary: primaryAction,
-                onReset: model.reset
+                showsReset: false,
+                onPrimary: primaryAction
             )
         }
         .navigationTitle("Simple Timer")
@@ -83,7 +87,9 @@ struct SimpleTimerView: View {
     }
 
     private func primaryAction() {
-        if !model.hasStarted {
+        if model.isFinished {
+            model.reset()
+        } else if !model.hasStarted {
             model.start()
         } else {
             model.togglePause()

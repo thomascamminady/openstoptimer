@@ -2,7 +2,7 @@ import XCTest
 
 final class HIITTests: UITestCase {
     private func openHIITLibrary() {
-        openMode(cardIdentifier: "home.card.hiit", expectedTitle: "HIIT Workouts")
+        openMode(cardIdentifier: "home.card.hiit", expectedTitle: "Advanced Workouts")
     }
 
     private func replaceText(in field: XCUIElement, with newValue: String) {
@@ -73,7 +73,7 @@ final class HIITTests: UITestCase {
         XCTAssertTrue(element("hiitPlayer.finishedView").waitForExistence(timeout: 30))
 
         app.buttons["hiitPlayer.doneButton"].tap()
-        XCTAssertTrue(app.navigationBars["HIIT Workouts"].waitForExistence(timeout: 20))
+        XCTAssertTrue(app.navigationBars["Advanced Workouts"].waitForExistence(timeout: 20))
         XCTAssertTrue(element("hiitLibrary.workoutRow.UI Test Tabata").exists)
     }
 
@@ -130,7 +130,7 @@ final class HIITTests: UITestCase {
         // among them shows its own round number.
         XCTAssertTrue(element("upcomingStrip").waitForExistence(timeout: 10))
         let upcomingWorkChip = app.descendants(matching: .any)
-            .matching(NSPredicate(format: "label CONTAINS 'R2/10'"))
+            .matching(NSPredicate(format: "label CONTAINS '2/10'"))
             .firstMatch
         XCTAssertTrue(upcomingWorkChip.waitForExistence(timeout: 10), "An upcoming Work chip should preview its round number")
 

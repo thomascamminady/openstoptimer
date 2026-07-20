@@ -19,7 +19,7 @@ struct HIITLibraryView: View {
                 ContentUnavailableView(
                     "No Workouts Yet",
                     systemImage: "flame",
-                    description: Text("Tap + to build your first HIIT workout.")
+                    description: Text("Tap + to build your first workout.")
                 )
             }
             ForEach(model.workouts) { workout in
@@ -62,7 +62,8 @@ struct HIITLibraryView: View {
                 }
             }
         }
-        .navigationTitle("HIIT Workouts")
+        .navigationTitle("Advanced Workouts")
+        .navigationBarTitleDisplayMode(.inline)
         .navigationDestination(for: HIITWorkout.self) { workout in
             HIITPlayerView(workout: workout, appearance: resolvedAppearance(for: workout))
         }

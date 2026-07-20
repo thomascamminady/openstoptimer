@@ -20,8 +20,9 @@ struct BigTimeText: View {
         Text(formatted)
             // `.monospaced` gives tall, blocky digit glyphs (closer to a
             // digital watch) which read better at a distance than rounded
-            // digits do, even at the same point size.
-            .font(.system(size: baseSize * fontScale, weight: .black, design: .monospaced))
+            // digits do, even at the same point size. A condensed width
+            // keeps the glyphs feeling "tall" rather than just wide.
+            .font(.system(size: baseSize * fontScale, weight: .heavy, design: .monospaced).width(.condensed))
             .monospacedDigit()
             .minimumScaleFactor(0.1)
             .lineLimit(1)

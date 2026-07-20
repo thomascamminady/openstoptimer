@@ -8,7 +8,7 @@ struct HIITPlayerView: View {
     @State private var model: HIITPlayerModel
     @State private var isEditingWorkout = false
 
-    private let upcomingLookahead = 3
+    private let upcomingLookahead = 4
 
     init(workout: HIITWorkout, appearance: AppearanceConfig) {
         _model = State(initialValue: HIITPlayerModel(workout: workout, appearance: appearance))
@@ -98,10 +98,10 @@ struct HIITPlayerView: View {
     }
 
     /// Shown on an upcoming-step chip — a work chip previews its round
-    /// number (e.g. "R2/10") so mid-rest you can see what's coming.
+    /// number (e.g. "2/10") so mid-rest you can see what's coming.
     private func chipProgressText(for step: WorkoutStep) -> String? {
         guard step.kind == .work, let progress = step.roundProgress else { return nil }
-        return "R\(progress.round)/\(progress.totalRounds)"
+        return "\(progress.round)/\(progress.totalRounds)"
     }
 
     private var upcomingItems: [UpcomingStepsStrip.Item] {

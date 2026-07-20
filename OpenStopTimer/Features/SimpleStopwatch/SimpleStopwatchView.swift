@@ -14,8 +14,8 @@ struct SimpleStopwatchView: View {
             PlayerControls(
                 hasStarted: model.hasStarted,
                 isPaused: model.isPaused,
-                onPrimary: primaryAction,
-                onReset: model.reset
+                showsReset: false,
+                onPrimary: primaryAction
             )
         }
         .navigationTitle("Simple Stopwatch")

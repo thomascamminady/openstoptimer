@@ -14,18 +14,8 @@ enum AppDestination: String, CaseIterable, Identifiable, Hashable {
         case .simpleTimer: "Simple Timer"
         case .simpleStopwatch: "Simple Stopwatch"
         case .lapStopwatch: "Lap Stopwatch"
-        case .hiit: "HIIT Workouts"
+        case .hiit: "Advanced Workouts"
         case .settings: "Settings"
-        }
-    }
-
-    var subtitle: String {
-        switch self {
-        case .simpleTimer: "Set it and go"
-        case .simpleStopwatch: "Start, stop, reset"
-        case .lapStopwatch: "Track splits"
-        case .hiit: "Build & run intervals"
-        case .settings: "Colors, sounds & more"
         }
     }
 

@@ -83,11 +83,11 @@ struct HIITEditorView: View {
     private var addBlockRow: some View {
         VStack(spacing: 12) {
             HStack(spacing: 10) {
-                AddBlockButton(title: "Interval", systemImage: "repeat", identifier: "hiitEditor.addRoundGroup") {
-                    editingBlockID = model.addRoundGroup()
-                }
                 AddBlockButton(title: "Warm Up", systemImage: "figure.walk", identifier: "hiitEditor.addWarmup") {
                     model.addWarmup()
+                }
+                AddBlockButton(title: "Interval", systemImage: "repeat", identifier: "hiitEditor.addRoundGroup") {
+                    editingBlockID = model.addRoundGroup()
                 }
                 AddBlockButton(title: "Cool Down", systemImage: "wind", identifier: "hiitEditor.addCooldown") {
                     model.addCooldown()

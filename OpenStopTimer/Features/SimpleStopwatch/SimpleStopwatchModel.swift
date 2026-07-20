@@ -32,13 +32,6 @@ final class SimpleStopwatchModel {
         }
     }
 
-    func reset() {
-        tickTask?.cancel()
-        tickTask = nil
-        engine = nil
-        displayedElapsed = 0
-    }
-
     private func startTicking() {
         tickTask?.cancel()
         tickTask = Task { [weak self] in
