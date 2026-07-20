@@ -16,21 +16,25 @@ struct CurrentStepView: View {
             color
             VStack(spacing: 14) {
                 Text(name.uppercased())
-                    .font(.system(size: 24 * fontScale, weight: .semibold, design: .rounded))
+                    .font(.system(size: 24, weight: .semibold, design: .rounded))
                     .foregroundStyle(.white.opacity(0.85))
                     .lineLimit(2)
                     .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
                     .accessibilityIdentifier("currentStep.name")
+                // `fontScale` here is how much of the remaining box height
+                // the digits themselves should fill — see BigTimeText.
                 BigTimeText(interval: remaining, fontScale: fontScale)
                     .foregroundStyle(.white)
                     .accessibilityIdentifier("currentStep.remaining")
                 if let progressText {
                     Text(progressText)
-                        .font(.system(size: 16 * fontScale, weight: .bold, design: .rounded))
+                        .font(.system(size: 16, weight: .bold, design: .rounded))
                         .foregroundStyle(.white)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 4)
                         .background(.white.opacity(0.2), in: Capsule())
+                        .fixedSize()
                         .accessibilityIdentifier("currentStep.progressText")
                 }
             }

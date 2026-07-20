@@ -139,8 +139,8 @@ struct HIITEditorView: View {
                 }
 
                 VStack(alignment: .leading) {
-                    Text("Text Size: \(String(format: "%.1fx", WorkoutAppearanceModel.fontScaleBinding(appearanceOverrideBinding, global: appState.globalAppearance).wrappedValue))")
-                    Slider(value: WorkoutAppearanceModel.fontScaleBinding(appearanceOverrideBinding, global: appState.globalAppearance), in: 0.6...1.8, step: 0.1)
+                    Text("Number Height: \(String(format: "%.0f%%", WorkoutAppearanceModel.fontScaleBinding(appearanceOverrideBinding, global: appState.globalAppearance).wrappedValue * 100))")
+                    Slider(value: WorkoutAppearanceModel.fontScaleBinding(appearanceOverrideBinding, global: appState.globalAppearance), in: 0.3...1.0, step: 0.05)
                 }
                 VStack(alignment: .leading) {
                     Text("Current / Next Balance")

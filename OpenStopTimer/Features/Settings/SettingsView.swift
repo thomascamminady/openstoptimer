@@ -19,8 +19,8 @@ struct SettingsView: View {
 
             Section("Display") {
                 VStack(alignment: .leading) {
-                    Text("Text Size: \(String(format: "%.1fx", appState.globalAppearance.fontScale))")
-                    Slider(value: $appState.globalAppearance.fontScale, in: 0.6...1.8, step: 0.1)
+                    Text("Number Height: \(String(format: "%.0f%%", appState.globalAppearance.fontScale * 100))")
+                    Slider(value: $appState.globalAppearance.fontScale, in: 0.3...1.0, step: 0.05)
                 }
                 VStack(alignment: .leading) {
                     Text("Current / Next Balance")

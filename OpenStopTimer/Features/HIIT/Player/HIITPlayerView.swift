@@ -18,22 +18,15 @@ struct HIITPlayerView: View {
         AdaptiveTimerLayout {
             display
         } controls: {
-            if !model.isFinished {
-                PlayerControls(
-                    hasStarted: model.hasStarted,
-                    isPaused: model.isPaused,
-                    showsSkip: model.hasStarted,
-                    onPrimary: primaryAction,
-                    onReset: model.reset,
-                    onSkipBack: model.skipPrevious,
-                    onSkipForward: model.skipNext
-                )
-            }
+            controlsView
         }
         // No workout-name title — every pixel here is screen real estate
-        // that matters for the countdown, especially in landscape.
+        // that matters for the countdown, especially in landscape. The
+        // whole nav bar disappears once a session is actually running, in
+        // favor of the in-content Back button below.
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar(model.hasStarted && !model.isFinished ? .hidden : .visible, for: .navigationBar)
         .keepScreenAwake(while: model.isRunning)
         .onChange(of: scenePhase) { _, newValue in
             model.handleScenePhase(isActive: newValue == .active)
@@ -63,13 +56,51 @@ struct HIITPlayerView: View {
     }
 
     @ViewBuilder
+    private var controlsView: some View {
+        if !model.isFinished {
+            VStack(spacing: 16) {
+                PlayerControls(
+                    hasStarted: model.hasStarted,
+                    isPaused: model.isPaused,
+                    showsSkip: model.hasStarted,
+                    showsReset: false,
+                    onPrimary: primaryAction,
+                    onSkipBack: model.skipPrevious,
+                    onSkipForward: model.skipNext
+                )
+                // A second row below skip/pause/skip — "Back" exits to the
+                // library (replacing the now-hidden nav bar's back chevron),
+                // "Replay" restarts the same workout from the top.
+                if model.hasStarted {
+                    HStack(spacing: 40) {
+                        exitReplayButton(title: "Back", systemImage: "chevron.left", identifier: "hiitPlayer.backButton") {
+                            dismiss()
+                        }
+                        exitReplayButton(title: "Replay", systemImage: "arrow.counterclockwise", identifier: "playerControls.reset") {
+                            model.reset()
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private func exitReplayButton(title: String, systemImage: String, identifier: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Label(title, systemImage: systemImage)
+                .font(.subheadline.weight(.semibold))
+        }
+        .buttonStyle(.bordered)
+        .accessibilityIdentifier(identifier)
+    }
+
+    @ViewBuilder
     private var display: some View {
         if model.isFinished {
             finishedView
         } else if let current = model.currentStep, model.hasStarted {
             GeometryReader { proxy in
                 VStack(spacing: 8) {
-                    progressBar
                     CurrentStepView(
                         name: current.name,
                         color: model.appearance.color(for: current.kind).color,
@@ -127,22 +158,6 @@ struct HIITPlayerView: View {
                 roundText: chipProgressText(for: step)
             )
         }
-    }
-
-    private var progressBar: some View {
-        GeometryReader { proxy in
-            let progress = model.steps.isEmpty ? 0 : Double(model.currentStepIndex + 1) / Double(model.steps.count)
-            Rectangle()
-                .fill(Color.primary.opacity(0.15))
-                .overlay(alignment: .leading) {
-                    Rectangle()
-                        .fill(Color.primary.opacity(0.4))
-                        .frame(width: proxy.size.width * progress)
-                }
-        }
-        .frame(height: 4)
-        .accessibilityIdentifier("hiitPlayer.progressBar")
-        .accessibilityValue("Step \(model.currentStepIndex + 1) of \(model.steps.count)")
     }
 
     private var summaryView: some View {
