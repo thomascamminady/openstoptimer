@@ -67,19 +67,26 @@ struct HIITPlayerView: View {
         if model.isFinished {
             finishedView
         } else if let current = model.currentStep, model.hasStarted {
-            VStack(spacing: 8) {
-                progressBar
-                CurrentStepView(
-                    name: current.name,
-                    color: current.color.color,
-                    remaining: model.displayedRemainingInStep,
-                    progressText: activeProgressText(for: current),
-                    fontScale: model.appearance.fontScale
-                )
-                if !upcomingItems.isEmpty {
-                    UpcomingStepsStrip(items: upcomingItems)
-                        .padding(.horizontal, 12)
-                        .padding(.bottom, 8)
+            GeometryReader { proxy in
+                VStack(spacing: 8) {
+                    progressBar
+                    CurrentStepView(
+                        name: current.name,
+                        color: model.appearance.color(for: current.kind).color,
+                        remaining: model.displayedRemainingInStep,
+                        progressText: activeProgressText(for: current),
+                        fontScale: model.appearance.fontScale
+                    )
+                    if !upcomingItems.isEmpty {
+                        // `currentNextRatio` (Settings > Display > "Current /
+                        // Next Balance") is the fraction of this whole area
+                        // the current-step display gets; the strip gets the
+                        // rest, with a floor so tiles stay legible even at
+                        // the ratio's high end.
+                        UpcomingStepsStrip(items: upcomingItems)
+                            .padding(.horizontal, 8)
+                            .frame(height: stripHeight(in: proxy.size.height))
+                    }
                 }
             }
         } else {
@@ -104,13 +111,18 @@ struct HIITPlayerView: View {
         return "\(progress.round)/\(progress.totalRounds)"
     }
 
+    private func stripHeight(in availableHeight: CGFloat) -> CGFloat {
+        let raw = availableHeight * (1 - model.appearance.currentNextRatio)
+        return min(max(raw, 72), 140)
+    }
+
     private var upcomingItems: [UpcomingStepsStrip.Item] {
         let upcoming = model.steps[(model.currentStepIndex + 1)...].prefix(upcomingLookahead)
         return upcoming.map { step in
             UpcomingStepsStrip.Item(
                 id: step.id,
                 name: step.name,
-                color: step.color.color,
+                color: model.appearance.color(for: step.kind).color,
                 duration: step.duration,
                 roundText: chipProgressText(for: step)
             )
@@ -141,7 +153,7 @@ struct HIITPlayerView: View {
                 .foregroundStyle(.secondary)
             List(model.steps) { step in
                 HStack {
-                    Circle().fill(step.color.color).frame(width: 10, height: 10)
+                    Circle().fill(model.appearance.color(for: step.kind).color).frame(width: 10, height: 10)
                     Text(step.name)
                     if let progress = step.roundProgress {
                         Text("\(progress.round)/\(progress.totalRounds)")

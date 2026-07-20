@@ -41,28 +41,29 @@ struct UpcomingStepsStrip: View {
                 }
             }
         }
-        .frame(height: 60)
+        // Deliberately no fixed height here — the caller sizes this via
+        // `.frame(height:)` based on the user's current/next balance setting.
         .accessibilityIdentifier("upcomingStrip")
     }
 
     private func tile(_ item: Item) -> some View {
-        VStack(spacing: 2) {
+        VStack(spacing: 4) {
             Text(item.name.uppercased())
-                .font(.system(size: 12, weight: .bold, design: .rounded))
+                .font(.system(size: 15, weight: .bold, design: .rounded))
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
             Text("\(Int(item.duration))s")
-                .font(.system(size: 11, weight: .medium, design: .rounded))
+                .font(.system(size: 13, weight: .medium, design: .rounded))
                 .opacity(0.85)
             if let roundText = item.roundText {
                 Text(roundText)
-                    .font(.system(size: 10, weight: .heavy, design: .rounded))
+                    .font(.system(size: 12, weight: .heavy, design: .rounded))
                     .opacity(0.85)
             }
         }
         .foregroundStyle(.white)
         .padding(.horizontal, 6)
-        .frame(height: 60)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(item.color, in: RoundedRectangle(cornerRadius: 12))
         .accessibilityElement(children: .combine)
         .accessibilityIdentifier("upcomingStrip.item.\(item.id)")
@@ -76,5 +77,6 @@ struct UpcomingStepsStrip: View {
         .init(id: UUID(), name: "Rest", color: .blue, duration: 15, roundText: nil),
         .init(id: UUID(), name: "Work", color: .red, duration: 30, roundText: "3/10"),
     ])
+    .frame(height: 92)
     .padding()
 }

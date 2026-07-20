@@ -3,12 +3,13 @@ import OpenStopTimerKit
 
 struct BlockSummaryRow: View {
     let block: HIITBlock
+    let appearance: AppearanceConfig
 
     var body: some View {
         switch block {
         case .step(let step):
             HStack {
-                Circle().fill(step.color.color).frame(width: 10, height: 10)
+                Circle().fill(appearance.color(for: step.kind).color).frame(width: 10, height: 10)
                 Text(step.name)
                 Spacer()
                 Text("\(Int(step.duration))s").foregroundStyle(.secondary)

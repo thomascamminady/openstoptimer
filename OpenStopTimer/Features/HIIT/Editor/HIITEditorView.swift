@@ -3,6 +3,7 @@ import OpenStopTimerKit
 
 struct HIITEditorView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(AppState.self) private var appState
     @State private var model: HIITEditorModel
     @State private var editingBlockID: HIITBlock.ID?
 
@@ -29,7 +30,7 @@ struct HIITEditorView: View {
                         Button {
                             editingBlockID = block.id
                         } label: {
-                            BlockSummaryRow(block: block)
+                            BlockSummaryRow(block: block, appearance: appState.globalAppearance)
                         }
                         .buttonStyle(.plain)
                     }
@@ -46,6 +47,8 @@ struct HIITEditorView: View {
                     }
                 }
             }
+
+            appearanceSection
         }
         .navigationTitle(model.workout.name.isEmpty ? "New Workout" : model.workout.name)
         .navigationBarTitleDisplayMode(.inline)
@@ -116,6 +119,69 @@ struct HIITEditorView: View {
 
     private var isEditingBlock: Binding<Bool> {
         Binding(get: { editingBlockID != nil }, set: { if !$0 { editingBlockID = nil } })
+    }
+
+    /// Lets this workout override any of Settings' global appearance
+    /// defaults (colors, text size, current/next balance, sounds, haptics).
+    /// Only the fields actually touched here are stored — anything left
+    /// alone keeps tracking whatever Settings says, even after this save.
+    private var appearanceSection: some View {
+        Section {
+            Toggle("Customize Appearance for This Workout", isOn: appearanceOverrideEnabledBinding)
+                .accessibilityIdentifier("hiitEditor.appearanceOverrideToggle")
+
+            if model.workout.appearanceOverride != nil {
+                ForEach(PhaseKind.allCases) { phase in
+                    ColorPicker(
+                        phase.displayName,
+                        selection: WorkoutAppearanceModel.colorBinding(appearanceOverrideBinding, global: appState.globalAppearance, for: phase)
+                    )
+                }
+
+                VStack(alignment: .leading) {
+                    Text("Text Size: \(String(format: "%.1fx", WorkoutAppearanceModel.fontScaleBinding(appearanceOverrideBinding, global: appState.globalAppearance).wrappedValue))")
+                    Slider(value: WorkoutAppearanceModel.fontScaleBinding(appearanceOverrideBinding, global: appState.globalAppearance), in: 0.6...1.8, step: 0.1)
+                }
+                VStack(alignment: .leading) {
+                    Text("Current / Next Balance")
+                    Slider(value: WorkoutAppearanceModel.currentNextRatioBinding(appearanceOverrideBinding, global: appState.globalAppearance), in: 0.5...0.95, step: 0.05)
+                }
+
+                Toggle("Sounds Enabled", isOn: WorkoutAppearanceModel.soundsEnabledBinding(appearanceOverrideBinding, global: appState.globalAppearance))
+                if WorkoutAppearanceModel.soundsEnabledBinding(appearanceOverrideBinding, global: appState.globalAppearance).wrappedValue {
+                    ForEach(SoundEvent.allCases) { event in
+                        Picker(
+                            event.displayName,
+                            selection: WorkoutAppearanceModel.soundBinding(appearanceOverrideBinding, global: appState.globalAppearance, for: event)
+                        ) {
+                            ForEach(SoundChoice.allCases) { choice in
+                                Text(choice.displayName).tag(choice)
+                            }
+                        }
+                    }
+                }
+
+                Toggle("Haptics Enabled", isOn: WorkoutAppearanceModel.hapticsEnabledBinding(appearanceOverrideBinding, global: appState.globalAppearance))
+            }
+        } header: {
+            Text("Appearance")
+        } footer: {
+            Text("Overrides the global colors, text size, and sounds from Settings for just this workout.")
+        }
+    }
+
+    private var appearanceOverrideEnabledBinding: Binding<Bool> {
+        Binding(
+            get: { model.workout.appearanceOverride != nil },
+            set: { isOn in model.workout.appearanceOverride = isOn ? AppearanceOverride() : nil }
+        )
+    }
+
+    private var appearanceOverrideBinding: Binding<AppearanceOverride> {
+        Binding(
+            get: { model.workout.appearanceOverride ?? AppearanceOverride() },
+            set: { model.workout.appearanceOverride = $0 }
+        )
     }
 }
 
