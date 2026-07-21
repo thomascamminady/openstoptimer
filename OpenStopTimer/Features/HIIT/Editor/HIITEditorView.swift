@@ -197,7 +197,7 @@ private struct AddBlockButton: View {
                 Image(systemName: systemImage)
                     .font(.system(size: 22, weight: .semibold))
                 Text(title)
-                    .font(.caption.bold())
+                    .font(.caption.weight(.medium))
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 14)

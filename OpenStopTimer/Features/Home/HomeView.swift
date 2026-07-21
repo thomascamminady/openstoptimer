@@ -66,7 +66,7 @@ private struct ModeTile: View {
 
     var body: some View {
         Text(destination.title)
-            .font(.title.bold())
+            .font(.title.weight(.medium))
             .multilineTextAlignment(.center)
             .minimumScaleFactor(0.5)
             .padding()

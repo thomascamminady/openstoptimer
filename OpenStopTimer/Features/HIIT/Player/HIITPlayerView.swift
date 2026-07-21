@@ -163,7 +163,7 @@ struct HIITPlayerView: View {
     private var summaryView: some View {
         VStack(spacing: 16) {
             Text(model.workout.name)
-                .font(.largeTitle.bold())
+                .font(.largeTitle.weight(.medium))
             Text("\(model.steps.count) steps · \(TimeFormatting.clock(model.workout.totalDuration))")
                 .foregroundStyle(.secondary)
             List(model.steps) { step in
@@ -193,7 +193,7 @@ struct HIITPlayerView: View {
                 .font(.system(size: 64))
                 .foregroundStyle(.green)
             Text("Workout Complete!")
-                .font(.title.bold())
+                .font(.title.weight(.medium))
                 .accessibilityIdentifier("hiitPlayer.finishedView")
             Text(TimeFormatting.clock(model.workout.totalDuration))
                 .foregroundStyle(.secondary)

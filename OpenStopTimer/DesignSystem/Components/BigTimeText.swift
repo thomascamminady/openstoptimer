@@ -1,10 +1,10 @@
 import SwiftUI
 
-/// The large monospaced-digit time display shared by all four modes.
+/// The large tabular-digit time display shared by all four modes.
 /// `fontScale` (0...1) is how much of the available height the digits
-/// should claim — see `FillHeightText`. Deliberately huge and heavy — this
-/// needs to be readable from across a room, propped on a shelf during a
-/// workout, not just up close.
+/// should claim — see `FillHeightText`. Deliberately huge — this needs to
+/// be readable from across a room, propped on a shelf during a workout,
+/// not just up close.
 struct BigTimeText: View {
     let interval: TimeInterval
     var fontScale: Double = 1.0

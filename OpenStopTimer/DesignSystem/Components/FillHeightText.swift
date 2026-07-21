@@ -1,8 +1,8 @@
 import SwiftUI
 
-/// Renders `text` as big, tall, monospaced digits that fill whatever box the
-/// parent gives it, rather than a fixed point size — `fillFraction` (0...1)
-/// is how much of that box's *height* the digits should claim. Shared by
+/// Renders `text` as big, tall digits that fill whatever box the parent
+/// gives it, rather than a fixed point size — `fillFraction` (0...1) is how
+/// much of that box's *height* the digits should claim. Shared by
 /// `BigTimeText` (mm:ss) and the metronome's plain seconds-into-cycle number.
 struct FillHeightText: View {
     let text: String
@@ -11,14 +11,17 @@ struct FillHeightText: View {
     var body: some View {
         GeometryReader { proxy in
             Text(text)
-                // `.monospaced` gives tall, blocky digit glyphs (closer to a
-                // digital watch) which read better at a distance than
-                // rounded digits do, even at the same point size. A
-                // condensed width keeps the glyphs feeling "tall" rather
-                // than just wide. The literal point size here is just an
-                // upper bound — `minimumScaleFactor` is what actually fits
-                // the text to the frame below, both by width and height.
-                .font(.system(size: proxy.size.height * 2, weight: .heavy, design: .monospaced).width(.condensed))
+                // The system (San Francisco) design, not `.monospaced` (SF
+                // Mono) — SF Mono's zero has a dot through the middle, which
+                // reads oddly at this size; regular San Francisco's doesn't.
+                // A compressed width plus a moderate (not heavy) weight is
+                // what actually makes these read as "tall," not bold — a
+                // condensed/compressed weight-and-width combination is
+                // materially taller per glyph than a heavier, wider one at
+                // the same point size. The literal point size here is just
+                // an upper bound — `minimumScaleFactor` is what actually
+                // fits the text to the frame below, both by width and height.
+                .font(.system(size: proxy.size.height * 2, weight: .medium, design: .default).width(.compressed))
                 .monospacedDigit()
                 .minimumScaleFactor(0.01)
                 .lineLimit(1)

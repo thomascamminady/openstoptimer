@@ -31,10 +31,13 @@ targets:
         GENERATE_INFOPLIST_FILE: NO
         INFOPLIST_FILE: OpenStopTimer/Supporting/Info.plist
         ENABLE_PREVIEWS: YES
-        # Automatic signing: to run on a physical iPhone, open the target's
-        # Signing & Capabilities tab in Xcode and pick your personal team —
-        # no paid Apple Developer account required for on-device testing.
+        # Automatic signing with the team ID baked in here (not just picked
+        # in Xcode's UI) so it survives `xcodegen generate` regenerating the
+        # .xcodeproj from scratch — without this, every regeneration wiped
+        # the team selection back out and Xcode demanded it again. No paid
+        # Apple Developer account needed for on-device testing.
         CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: 728V7UQDA9
     dependencies:
       - package: OpenStopTimerKit
 
@@ -49,6 +52,8 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: dev.camminady.openstoptimer.uitests
         SWIFT_VERSION: "5.0"
         GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: 728V7UQDA9
     dependencies:
       - target: OpenStopTimer
 

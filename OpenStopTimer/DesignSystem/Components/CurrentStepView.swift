@@ -16,7 +16,7 @@ struct CurrentStepView: View {
             color
             VStack(spacing: 14) {
                 Text(name.uppercased())
-                    .font(.system(size: 24, weight: .semibold, design: .rounded))
+                    .font(.system(size: 24, weight: .medium, design: .rounded))
                     .foregroundStyle(.white.opacity(0.85))
                     .lineLimit(2)
                     .multilineTextAlignment(.center)
@@ -29,7 +29,7 @@ struct CurrentStepView: View {
                     .accessibilityIdentifier("currentStep.remaining")
                 if let progressText {
                     Text(progressText)
-                        .font(.system(size: 16, weight: .bold, design: .rounded))
+                        .font(.system(size: 16, weight: .medium, design: .rounded))
                         .foregroundStyle(.white)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 4)

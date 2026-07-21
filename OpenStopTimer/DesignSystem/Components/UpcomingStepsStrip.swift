@@ -49,15 +49,15 @@ struct UpcomingStepsStrip: View {
     private func tile(_ item: Item) -> some View {
         VStack(spacing: 4) {
             Text(item.name.uppercased())
-                .font(.system(size: 15, weight: .bold, design: .rounded))
+                .font(.system(size: 15, weight: .medium, design: .rounded))
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
             Text("\(Int(item.duration))s")
-                .font(.system(size: 13, weight: .medium, design: .rounded))
+                .font(.system(size: 13, weight: .regular, design: .rounded))
                 .opacity(0.85)
             if let roundText = item.roundText {
                 Text(roundText)
-                    .font(.system(size: 12, weight: .heavy, design: .rounded))
+                    .font(.system(size: 12, weight: .medium, design: .rounded))
                     .opacity(0.85)
             }
         }
