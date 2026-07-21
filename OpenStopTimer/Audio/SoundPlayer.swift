@@ -2,8 +2,9 @@ import AVFoundation
 import OpenStopTimerKit
 
 /// Plays the bundled beep/chime/bell assets for in-app (foreground) events.
-/// Background alerting is handled separately by `NotificationScheduler`,
-/// which reuses the same bundled files as notification sounds.
+/// Deliberately the only way this app ever makes noise or vibrates — there
+/// is no local-notification scheduling anywhere, so it never posts a system
+/// alert/banner, and it never plays anything while backgrounded/suspended.
 @MainActor
 final class SoundPlayer {
     static let shared = SoundPlayer()

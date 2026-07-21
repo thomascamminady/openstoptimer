@@ -1,7 +1,7 @@
 import XCTest
 
 final class HomeNavigationTests: UITestCase {
-    func testAllFourModesAndSettingsAreReachableFromHome() {
+    func testAllFiveModesAndSettingsAreReachableFromHome() {
         XCTAssertTrue(app.navigationBars["OpenStopTimer"].waitForExistence(timeout: 5))
 
         openMode(cardIdentifier: "home.card.simpleTimer", expectedTitle: "Simple Timer")
@@ -14,6 +14,11 @@ final class HomeNavigationTests: UITestCase {
         app.navigationBars.buttons.element(boundBy: 0).tap()
 
         openMode(cardIdentifier: "home.card.hiit", expectedTitle: "Advanced Workouts")
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+
+        // The metronome hides its nav bar once running but keeps it
+        // (with a plain back chevron) while idle, same as every other mode.
+        openMode(cardIdentifier: "home.card.metronome", expectedTitle: "Metronome")
         app.navigationBars.buttons.element(boundBy: 0).tap()
 
         XCTAssertTrue(app.navigationBars["OpenStopTimer"].waitForExistence(timeout: 5))

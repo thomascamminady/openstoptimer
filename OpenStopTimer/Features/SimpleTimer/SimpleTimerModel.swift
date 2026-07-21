@@ -15,7 +15,6 @@ final class SimpleTimerModel {
 
     private var engine: TimerEngine?
     private var tickTask: Task<Void, Never>?
-    private let notificationScheduler = NotificationScheduler()
 
     var hasStarted: Bool { engine != nil }
     var isPaused: Bool { engine?.isPaused ?? false }
@@ -46,7 +45,6 @@ final class SimpleTimerModel {
         engine = nil
         isFinished = false
         displayedRemaining = selectedDuration
-        notificationScheduler.cancelAll()
     }
 
     private func startTicking() {
@@ -67,23 +65,6 @@ final class SimpleTimerModel {
             isFinished = true
             SoundPlayer.shared.play(AppearanceConfig.default.sound(for: .workoutComplete))
             Haptics.success()
-        }
-    }
-
-    /// Called from the view on `scenePhase` changes so a locked/backgrounded
-    /// countdown still alerts the user at the right moment.
-    func handleScenePhase(isActive: Bool) {
-        guard let engine, engine.isRunning, let finishDate = engine.projectedFinishDate else {
-            if isActive { notificationScheduler.cancelAll() }
-            return
-        }
-        if isActive {
-            notificationScheduler.cancelAll()
-        } else {
-            Task {
-                await notificationScheduler.requestAuthorizationIfNeeded()
-                await notificationScheduler.scheduleSimpleTimerCompletion(finishDate: finishDate, appearance: .default)
-            }
         }
     }
 }

@@ -132,21 +132,4 @@ public final class PhaseSequenceEngine {
         guard hasStarted else { return }
         skipOffset = target - rawElapsed
     }
-
-    /// Wall-clock timestamps and step indices for every remaining phase
-    /// transition — used to schedule background notifications.
-    public func remainingTransitions() -> [(date: Date, stepIndex: Int)] {
-        guard isRunning else { return [] }
-        let now = clock.now()
-        let elapsed = totalElapsed
-        var result: [(Date, Int)] = []
-        for index in 0..<steps.count where cumulativeStartOffsets[index] > elapsed {
-            let delay = cumulativeStartOffsets[index] - elapsed
-            result.append((now.addingTimeInterval(delay), index))
-        }
-        if elapsed < totalDuration {
-            result.append((now.addingTimeInterval(totalDuration - elapsed), steps.count))
-        }
-        return result
-    }
 }

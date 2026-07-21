@@ -96,13 +96,4 @@ struct PhaseSequenceEngineTests {
         engine.skipToPreviousStep()
         #expect(engine.currentPosition!.step.name == "Prepare")
     }
-
-    @Test func remainingTransitionsCount() {
-        let clock = FakeClock()
-        let steps = makeSteps()
-        let engine = PhaseSequenceEngine(steps: steps, clock: clock)
-        engine.start()
-        // 3 remaining step boundaries + 1 final completion = 4
-        #expect(engine.remainingTransitions().count == 4)
-    }
 }

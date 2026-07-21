@@ -90,12 +90,4 @@ public final class TimerEngine {
         pauseStartedAt = nil
         finishedAtElapsed = nil
     }
-
-    /// Wall-clock timestamp at which this engine will finish, given its
-    /// current state — used to schedule background notifications. `nil` if
-    /// not running or not a count-down engine.
-    public var projectedFinishDate: Date? {
-        guard isRunning, let remaining else { return nil }
-        return clock.now().addingTimeInterval(remaining)
-    }
 }

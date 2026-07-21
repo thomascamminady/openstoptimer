@@ -27,7 +27,6 @@ final class HIITPlayerModel {
     private(set) var isFinished: Bool = false
 
     private var tickTask: Task<Void, Never>?
-    private let notificationScheduler = NotificationScheduler()
     private var lastAnnouncedStepIndex: Int?
     private var lastTickWholeSecond: Int?
 
@@ -80,7 +79,6 @@ final class HIITPlayerModel {
         displayedRemainingInStep = 0
         currentStepIndex = 0
         isFinished = false
-        notificationScheduler.cancelAll()
     }
 
     private func startTicking() {
@@ -113,7 +111,7 @@ final class HIITPlayerModel {
         if engine.isFinished, !isFinished {
             isFinished = true
             SoundPlayer.shared.play(appearance.sound(for: .workoutComplete))
-            Haptics.success()
+            if appearance.hapticsEnabled { Haptics.success() }
         }
 
         guard let position = engine.currentPosition else {
@@ -125,7 +123,7 @@ final class HIITPlayerModel {
             lastAnnouncedStepIndex = position.stepIndex
             lastTickWholeSecond = nil
             SoundPlayer.shared.play(appearance.sound(for: .phaseStart))
-            Haptics.impact()
+            if appearance.hapticsEnabled { Haptics.impact() }
         } else if position.remainingInStep > 0, position.remainingInStep <= Double(appearance.tickLeadSeconds) {
             let wholeSecond = Int(position.remainingInStep.rounded(.up))
             if wholeSecond != lastTickWholeSecond {
@@ -141,19 +139,12 @@ final class HIITPlayerModel {
         currentStepIndex = position.stepIndex
     }
 
-    /// Called from the view on `scenePhase` changes: schedules background
-    /// alerts for every remaining transition while backgrounded, and
-    /// reconciles/cancels them the instant the app is foreground again.
+    /// Called from the view on `scenePhase` changes: an immediate refresh on
+    /// returning to foreground, rather than waiting up to one tick interval
+    /// for the display to catch up with wherever the (still Date-anchored,
+    /// always-correct) engine actually is.
     func handleScenePhase(isActive: Bool) {
-        if isActive {
-            notificationScheduler.cancelAll()
-            syncFromEngine()
-        } else {
-            guard engine.isRunning else { return }
-            Task {
-                await notificationScheduler.requestAuthorizationIfNeeded()
-                await notificationScheduler.scheduleHIITTransitions(engine: engine, appearance: appearance)
-            }
-        }
+        guard isActive else { return }
+        syncFromEngine()
     }
 }

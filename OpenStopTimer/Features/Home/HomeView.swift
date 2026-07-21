@@ -1,19 +1,29 @@
 import SwiftUI
 
-/// The compact-width (iPhone) landing screen: four huge, unmissable tiles
+/// The compact-width (iPhone) landing screen: five huge, unmissable tiles
 /// filling the whole screen — the two "simple" modes need no explanation,
-/// the two advanced ones invite exploration. No wasted whitespace: picking
-/// a mode should be the single, obvious thing to do here.
+/// the other three invite exploration. No wasted whitespace: picking a mode
+/// should be the single, obvious thing to do here.
 struct HomeView: View {
-    private let modeDestinations: [AppDestination] = [.simpleTimer, .simpleStopwatch, .lapStopwatch, .hiit]
+    private let modeDestinations: [AppDestination] = [
+        .simpleTimer, .simpleStopwatch, .lapStopwatch, .hiit, .metronome
+    ]
 
     var body: some View {
         GeometryReader { proxy in
             let isWide = proxy.size.width > proxy.size.height
             Group {
                 if isWide {
-                    HStack(spacing: 12) {
-                        ForEach(modeDestinations) { tile($0) }
+                    VStack(spacing: 12) {
+                        HStack(spacing: 12) {
+                            tile(modeDestinations[0])
+                            tile(modeDestinations[1])
+                            tile(modeDestinations[2])
+                        }
+                        HStack(spacing: 12) {
+                            tile(modeDestinations[3])
+                            tile(modeDestinations[4])
+                        }
                     }
                 } else {
                     VStack(spacing: 12) {
@@ -25,6 +35,7 @@ struct HomeView: View {
                             tile(modeDestinations[2])
                             tile(modeDestinations[3])
                         }
+                        tile(modeDestinations[4])
                     }
                 }
             }

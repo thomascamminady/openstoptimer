@@ -4,7 +4,6 @@ import SwiftUI
 /// nothing else to think about.
 struct SimpleTimerView: View {
     @State private var model = SimpleTimerModel()
-    @Environment(\.scenePhase) private var scenePhase
 
     private var hours: Binding<Int> {
         Binding(
@@ -43,9 +42,6 @@ struct SimpleTimerView: View {
         .navigationTitle("Simple Timer")
         .navigationBarTitleDisplayMode(.inline)
         .keepScreenAwake(while: model.isRunning)
-        .onChange(of: scenePhase) { _, newValue in
-            model.handleScenePhase(isActive: newValue == .active)
-        }
     }
 
     @ViewBuilder

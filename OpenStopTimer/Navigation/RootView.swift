@@ -50,6 +50,7 @@ struct RootView: View {
         case .simpleStopwatch: SimpleStopwatchView()
         case .lapStopwatch: LapStopwatchView()
         case .hiit: HIITLibraryView(appState: appState)
+        case .metronome: MetronomeView(appState: appState)
         case .settings: SettingsView()
         }
     }
