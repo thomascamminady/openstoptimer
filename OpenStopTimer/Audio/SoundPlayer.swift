@@ -12,7 +12,14 @@ final class SoundPlayer {
     private var players: [SoundChoice: AVAudioPlayer] = [:]
 
     private init() {
-        try? AVAudioSession.sharedInstance().setCategory(.ambient, options: [.mixWithOthers])
+        // `.playback` (not `.ambient`) is what actually makes these beeps
+        // audible with the ring/silent switch flipped to silent — the
+        // normal state for a phone in a runner's pocket, and exactly when
+        // this app's sound matters most. `.mixWithOthers` still lets
+        // whatever music/podcast the user has playing keep playing under it.
+        let session = AVAudioSession.sharedInstance()
+        try? session.setCategory(.playback, options: [.mixWithOthers])
+        try? session.setActive(true)
     }
 
     /// Decodes every bundled sound up front. Call this once, early (e.g. at

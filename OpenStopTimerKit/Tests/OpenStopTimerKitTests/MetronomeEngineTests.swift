@@ -83,4 +83,51 @@ struct MetronomeEngineTests {
         #expect(MetronomeEngine(cycleSeconds: 500).cycleSeconds == 100)
         #expect(MetronomeEngine(cycleSeconds: 42).cycleSeconds == 42)
     }
+
+    @Test func fractionalSecondProgressIsZeroBeforeStarting() {
+        let engine = MetronomeEngine(cycleSeconds: 42)
+        #expect(engine.fractionalSecondProgress == 0)
+    }
+
+    @Test func fractionalSecondProgressSweepsForwardAndWrapsWhileRunning() {
+        let clock = FakeClock()
+        let engine = MetronomeEngine(cycleSeconds: 42, clock: clock)
+        engine.start()
+        #expect(abs(engine.fractionalSecondProgress - 0) < 0.001)
+        clock.advance(by: 5.25)
+        #expect(abs(engine.fractionalSecondProgress - 0.25) < 0.001)
+        clock.advance(by: 0.74) // 5.99s total
+        #expect(abs(engine.fractionalSecondProgress - 0.99) < 0.001)
+        clock.advance(by: 0.01) // exactly 6.0s -> wraps back to (near) 0
+        #expect(engine.fractionalSecondProgress < 0.001)
+    }
+
+    /// Even though the *displayed* countdown number only ever decreases,
+    /// the ring should still visually fill up (not drain) across each
+    /// displayed second, so it resets in lockstep with the number changing.
+    @Test func fractionalSecondProgressFillsForwardDuringLeadIn() {
+        let clock = FakeClock()
+        let engine = MetronomeEngine(cycleSeconds: 42, clock: clock)
+        engine.start(leadInSeconds: 10)
+        #expect(engine.fractionalSecondProgress < 0.001)
+        clock.advance(by: 0.25)
+        #expect(abs(engine.fractionalSecondProgress - 0.25) < 0.001)
+        #expect(engine.phase == .leadIn(secondsRemaining: 10), "still the same displayed second")
+        clock.advance(by: 0.74) // 0.99s total
+        #expect(abs(engine.fractionalSecondProgress - 0.99) < 0.001)
+        clock.advance(by: 0.01) // exactly 1.0s -> secondsRemaining flips to 9, ring resets
+        #expect(engine.phase == .leadIn(secondsRemaining: 9))
+        #expect(engine.fractionalSecondProgress < 0.001)
+    }
+
+    @Test func fractionalSecondProgressFreezesWhilePaused() {
+        let clock = FakeClock()
+        let engine = MetronomeEngine(cycleSeconds: 42, clock: clock)
+        engine.start()
+        clock.advance(by: 3.4)
+        engine.pause()
+        let frozen = engine.fractionalSecondProgress
+        clock.advance(by: 50)
+        #expect(abs(engine.fractionalSecondProgress - frozen) < 0.001)
+    }
 }

@@ -94,4 +94,24 @@ public final class MetronomeEngine {
         let secondsIntoCycle = Int(max(0, elapsedSinceGo)) % cycleSeconds
         return pausedAt != nil ? .paused(secondsIntoCycle: secondsIntoCycle) : .running(secondsIntoCycle: secondsIntoCycle)
     }
+
+    /// How far into the currently-displayed second we are (0..<1) — the
+    /// same second `phase` reports via `secondsRemaining`/`secondsIntoCycle`,
+    /// just with sub-second resolution, so a UI can animate a ring/arc that
+    /// visually resets in lockstep with the integer changing. Frozen while
+    /// paused (same `referenceNow` substitution as `phase`); `0` before
+    /// starting.
+    public var fractionalSecondProgress: Double {
+        guard let runAnchor else { return 0 }
+        let referenceNow = pausedAt ?? clock.now()
+        if referenceNow < runAnchor {
+            // Counting down: "elapsed within this displayed second" is the
+            // complement of how far into the remaining-seconds fraction we
+            // are, so the ring still visually *fills* rather than drains.
+            let remainingFraction = runAnchor.timeIntervalSince(referenceNow).truncatingRemainder(dividingBy: 1)
+            return (1 - remainingFraction).truncatingRemainder(dividingBy: 1)
+        }
+        let elapsedSinceGo = max(0, referenceNow.timeIntervalSince(runAnchor) - totalPaused)
+        return elapsedSinceGo.truncatingRemainder(dividingBy: 1)
+    }
 }

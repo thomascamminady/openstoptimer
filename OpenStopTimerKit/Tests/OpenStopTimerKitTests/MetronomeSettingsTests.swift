@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 @testable import OpenStopTimerKit
 
@@ -45,5 +46,28 @@ struct MetronomeSettingsTests {
         let settings = MetronomeSettings(cycleSeconds: 42, offsetSeconds: 0)
         #expect(!settings.isWarningSecond(41))
         #expect(!settings.isWarningSecond(1))
+    }
+
+    @Test func initClampsLeadInSecondsToValidRange() {
+        #expect(MetronomeSettings(leadInSeconds: -5).leadInSeconds == 0)
+        #expect(MetronomeSettings(leadInSeconds: 60).leadInSeconds == 30)
+        #expect(MetronomeSettings(leadInSeconds: 15).leadInSeconds == 15)
+        #expect(MetronomeSettings().leadInSeconds == 10, "default should match the original fixed lead-in")
+    }
+
+    @Test func settingLeadInSecondsLeavesOtherFieldsUntouched() {
+        let settings = MetronomeSettings(cycleSeconds: 30, offsetSeconds: 2, leadInSeconds: 10)
+        let updated = settings.settingLeadInSeconds(5)
+        #expect(updated.leadInSeconds == 5)
+        #expect(updated.cycleSeconds == 30)
+        #expect(updated.offsetSeconds == 2)
+    }
+
+    @Test func decodingOlderPersistedSettingsWithoutLeadInSecondsDefaultsToTen() throws {
+        let legacyJSON = Data(#"{"cycleSeconds":30,"offsetSeconds":2}"#.utf8)
+        let decoded = try JSONDecoder().decode(MetronomeSettings.self, from: legacyJSON)
+        #expect(decoded.cycleSeconds == 30)
+        #expect(decoded.offsetSeconds == 2)
+        #expect(decoded.leadInSeconds == 10)
     }
 }

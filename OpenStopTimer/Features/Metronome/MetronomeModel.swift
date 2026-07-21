@@ -17,10 +17,14 @@ final class MetronomeModel {
 
     private var engine: MetronomeEngine
 
-    // Tracked, stored mirror of `engine.phase` — `MetronomeEngine` is a plain
-    // (non-Observable) class, so mutating it in place wouldn't otherwise
-    // trigger a SwiftUI re-render (same reasoning as `HIITPlayerModel`).
+    // Tracked, stored mirrors of `engine`'s state — `MetronomeEngine` is a
+    // plain (non-Observable) class, so mutating it in place wouldn't
+    // otherwise trigger a SwiftUI re-render (same reasoning as
+    // `HIITPlayerModel`).
     private(set) var phase: MetronomeEngine.Phase = .idle
+    /// 0..<1 — how far into the currently-displayed second we are, for the
+    /// sub-second progress ring. See `MetronomeEngine.fractionalSecondProgress`.
+    private(set) var progressWithinSecond: Double = 0
 
     private var tickTask: Task<Void, Never>?
     private var lastAnnouncedLeadInSecond: Int?
@@ -78,12 +82,12 @@ final class MetronomeModel {
         engine = MetronomeEngine(cycleSeconds: newSettings.cycleSeconds)
     }
 
-    func start(leadInSeconds: Int) {
+    func start() {
         engine = MetronomeEngine(cycleSeconds: settings.cycleSeconds)
         lastAnnouncedLeadInSecond = nil
         lastAnnouncedCycleSecond = nil
-        hasFiredGo = leadInSeconds <= 0
-        engine.start(leadInSeconds: leadInSeconds)
+        hasFiredGo = settings.leadInSeconds <= 0
+        engine.start(leadInSeconds: settings.leadInSeconds)
         syncFromEngine()
         startTicking()
     }
@@ -102,6 +106,7 @@ final class MetronomeModel {
         tickTask = nil
         engine.reset()
         phase = .idle
+        progressWithinSecond = 0
         lastAnnouncedLeadInSecond = nil
         lastAnnouncedCycleSecond = nil
         hasFiredGo = false
@@ -119,7 +124,10 @@ final class MetronomeModel {
 
     private func syncFromEngine() {
         let newPhase = engine.phase
-        defer { phase = newPhase }
+        defer {
+            phase = newPhase
+            progressWithinSecond = engine.fractionalSecondProgress
+        }
 
         switch newPhase {
         case .idle:
