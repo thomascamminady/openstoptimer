@@ -57,8 +57,10 @@ struct UpcomingStepsStrip: View {
                 .opacity(0.85)
             if let roundText = item.roundText {
                 Text(roundText)
-                    .font(.system(size: 12, weight: .medium, design: .rounded))
-                    .opacity(0.85)
+                    .font(.system(size: 15, weight: .bold, design: .rounded))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 2)
+                    .background(.black.opacity(0.28), in: Capsule())
             }
         }
         .foregroundStyle(.white)

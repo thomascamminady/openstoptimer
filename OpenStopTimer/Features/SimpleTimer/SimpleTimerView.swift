@@ -50,7 +50,7 @@ struct SimpleTimerView: View {
             ZStack {
                 (model.isFinished ? Color.green : Color(.systemBackground))
                     .ignoresSafeArea()
-                BigTimeText(interval: model.displayedRemaining)
+                BigTimeText(interval: model.displayedRemaining, isCountdown: true)
                     .foregroundStyle(model.isFinished ? .white : .primary)
                     .accessibilityIdentifier("simpleTimer.display")
             }

@@ -1,20 +1,20 @@
 import SwiftUI
 
-/// A ring split into 3 fixed thirds (12-4, 4-8, 8-12 o'clock), each its own
-/// color, filling up cumulatively as the second progresses — green, then
-/// green+yellow, then green+yellow+red — rather than only ever lighting one
-/// segment at a time. Deliberately coarse (updates 3x/second, not
-/// continuously) since a runner glancing down needs "early / on pace /
-/// late," not a precise sweep.
+/// A ring split into 3 fixed thirds (12-4, 4-8, 8-12 o'clock), filling up
+/// cumulatively as the second progresses — one lit segment, then two, then
+/// all three — rather than only ever lighting the single current one.
+/// Monochrome (one `tint`, varying opacity) rather than a traffic-light
+/// green/yellow/red, matching the rest of the metronome's plain, colorless
+/// aesthetic. Deliberately coarse (updates 3x/second, not continuously)
+/// since a runner glancing down needs "roughly how far into this second,"
+/// not a precise sweep.
 struct SubSecondProgressRing: View {
     /// 0..<1, where the current second started.
     var progress: Double
     var lineWidth: CGFloat = 14
+    var tint: Color = .primary
 
-    /// Traffic-light progression through the second: green (early), yellow
-    /// (middle), red (late) — reads instantly without a legend.
-    private static let segmentColors: [Color] = [.green, .yellow, .red]
-    private static let segmentCount = segmentColors.count
+    private static let segmentCount = 3
     /// Small angular gap between segments, as a fraction of the full circle.
     private static let gap = 0.012
 
@@ -36,7 +36,7 @@ struct SubSecondProgressRing: View {
         return Circle()
             .trim(from: start, to: end)
             .stroke(
-                Self.segmentColors[index].opacity(index <= activeSegment ? 1 : 0.15),
+                tint.opacity(index <= activeSegment ? 0.9 : 0.15),
                 style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
             )
             .rotationEffect(.degrees(-90))

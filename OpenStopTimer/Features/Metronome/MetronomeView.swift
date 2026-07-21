@@ -48,28 +48,29 @@ struct MetronomeView: View {
 
     private var display: some View {
         GeometryReader { proxy in
-            let decimalLabelHeight: CGFloat = 32
-            let side = max(0, min(proxy.size.width, proxy.size.height - decimalLabelHeight) - 24)
+            let side = max(0, min(proxy.size.width, proxy.size.height) - 24)
             let ringWidth = max(10, side * 0.035)
-            VStack(spacing: 4) {
-                ZStack {
-                    SubSecondProgressRing(progress: model.progressWithinSecond, lineWidth: ringWidth)
-                    FillHeightText(text: model.displayNumber, fillFraction: 0.65)
-                        .padding(ringWidth * 2.5)
+            ZStack {
+                SubSecondProgressRing(progress: model.progressWithinSecond, lineWidth: ringWidth)
+                VStack(spacing: side * 0.015) {
+                    FillHeightText(text: model.displayNumber, fillFraction: 0.6)
+                        .frame(height: side * 0.6)
+                    // A touch more precision than the ring's 3 coarse
+                    // thirds, for anyone who wants it — sized relative to
+                    // the ring itself (not a tiny fixed label) so it's
+                    // actually legible, and reserved so the number doesn't
+                    // shift when it appears.
+                    Text(model.decimalSecondText)
+                        .font(.system(size: side * 0.14, design: .default))
+                        .foregroundStyle(.secondary)
+                        .monospacedDigit()
+                        .opacity(model.hasStarted ? 1 : 0)
+                        .accessibilityHidden(true)
                 }
-                .foregroundStyle(.primary)
-                .frame(width: side, height: side)
-
-                // A touch more precision than the ring's 3 coarse thirds,
-                // for anyone who wants it — reserved space stays constant
-                // (just hidden pre-start) so the ring/number don't shift.
-                Text(model.decimalSecondText)
-                    .font(.system(size: decimalLabelHeight * 0.55, design: .default))
-                    .foregroundStyle(.secondary)
-                    .monospacedDigit()
-                    .opacity(model.hasStarted ? 1 : 0)
-                    .accessibilityHidden(true)
+                .padding(ringWidth * 2.2)
             }
+            .foregroundStyle(.primary)
+            .frame(width: side, height: side)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             // UI tests read the raw digits back via `.value` (same
             // convention as `BigTimeText`), keeping `.label` a
@@ -83,32 +84,23 @@ struct MetronomeView: View {
 
     private var controls: some View {
         ZStack {
-            primaryButton
+            CircularIconButton(systemImage: primaryIcon, style: .primary(color: primaryColor), action: primaryAction)
+                .accessibilityLabel(primaryAccessibilityLabel)
+                .accessibilityIdentifier("metronome.primaryButton")
             HStack {
-                circularButton(systemImage: "chevron.left", identifier: "metronome.backButton") {
+                CircularIconButton(systemImage: "chevron.left", style: .secondary) {
                     dismiss()
                 }
+                .accessibilityIdentifier("metronome.backButton")
                 Spacer()
                 if !model.hasStarted {
-                    circularButton(systemImage: "gearshape", identifier: "metronome.settingsButton") {
+                    CircularIconButton(systemImage: "gearshape", style: .secondary) {
                         isEditingSettings = true
                     }
+                    .accessibilityIdentifier("metronome.settingsButton")
                 }
             }
         }
-    }
-
-    private var primaryButton: some View {
-        Button(action: primaryAction) {
-            Image(systemName: primaryIcon)
-                .font(.system(size: 30, weight: .bold))
-                .foregroundStyle(.white)
-                .frame(width: 80, height: 80)
-                .background(Circle().fill(primaryColor))
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(primaryAccessibilityLabel)
-        .accessibilityIdentifier("metronome.primaryButton")
     }
 
     private var primaryIcon: String {
@@ -127,18 +119,6 @@ struct MetronomeView: View {
         if model.isCountingDown { return .red }
         if !model.hasStarted || model.isPaused { return .green }
         return .orange
-    }
-
-    private func circularButton(systemImage: String, identifier: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Image(systemName: systemImage)
-                .font(.system(size: 18, weight: .semibold))
-                .foregroundStyle(.primary)
-                .frame(width: 52, height: 52)
-                .background(Circle().fill(.thinMaterial))
-        }
-        .buttonStyle(.plain)
-        .accessibilityIdentifier(identifier)
     }
 
     private func primaryAction() {

@@ -92,6 +92,24 @@ struct HIITBlockExpansionTests {
         #expect(expanded[3].roundProgress == .init(round: 2, totalRounds: 2, set: 2, totalSets: 2))
     }
 
+    /// A round group's custom name (set by the user in the editor) has to
+    /// survive `expand()` somehow, or it's invisible everywhere except the
+    /// editor's own block list — it rides along on `roundProgress`.
+    @Test func expandedStepsCarryTheGroupsCustomName() {
+        let exercises = [WorkoutStep(name: "Work", kind: .work, duration: 20)]
+        let group = HIITBlock.RoundGroup(name: "Sprint Intervals", exercises: exercises, rounds: 2)
+        let expanded = HIITBlock.roundGroup(group).expand()
+        #expect(expanded[0].roundProgress?.groupName == "Sprint Intervals")
+        #expect(expanded[1].roundProgress?.groupName == "Sprint Intervals")
+    }
+
+    @Test func expandedStepsHaveNilGroupNameWhenTheGroupWasntNamed() {
+        let exercises = [WorkoutStep(name: "Work", kind: .work, duration: 20)]
+        let group = HIITBlock.RoundGroup(exercises: exercises, rounds: 1)
+        let expanded = HIITBlock.roundGroup(group).expand()
+        #expect(expanded[0].roundProgress?.groupName == nil)
+    }
+
     @Test func singleStepsHaveNoRoundProgress() {
         let step = WorkoutStep(name: "Warm Up", kind: .warmup, duration: 60)
         #expect(HIITBlock.step(step).expand().first?.roundProgress == nil)

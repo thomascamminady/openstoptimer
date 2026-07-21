@@ -1,4 +1,5 @@
 import SwiftUI
+import OpenStopTimerKit
 
 /// The large tabular-digit time display shared by all four modes.
 /// `fontScale` (0...1) is how much of the available height the digits
@@ -9,9 +10,16 @@ struct BigTimeText: View {
     let interval: TimeInterval
     var fontScale: Double = 1.0
     var showsTenths: Bool = false
+    /// Whether `interval` is a live countdown's remaining time — uses
+    /// ceiling so the displayed second doesn't flip early — vs. a
+    /// count-up/settled value, which uses nearest-rounding. Only meaningful
+    /// when `!showsTenths`; the tenths formatter already has enough
+    /// precision that this doesn't matter.
+    var isCountdown: Bool = false
 
     private var formatted: String {
-        showsTenths ? TimeFormatting.clockWithTenths(interval) : TimeFormatting.clock(interval)
+        if showsTenths { return TimeFormatting.clockWithTenths(interval) }
+        return isCountdown ? TimeFormatting.countdownClock(interval) : TimeFormatting.clock(interval)
     }
 
     var body: some View {
@@ -25,7 +33,7 @@ struct BigTimeText: View {
     }
 
     private var accessibilityLabel: String {
-        let total = Int(interval.rounded())
+        let total = isCountdown ? Int(interval.rounded(.up)) : Int(interval.rounded())
         let minutes = total / 60
         let seconds = total % 60
         return "\(minutes) minutes \(seconds) seconds"

@@ -16,12 +16,18 @@ public struct WorkoutStep: Codable, Identifiable, Hashable, Sendable {
         public var totalRounds: Int
         public var set: Int
         public var totalSets: Int
+        /// The authoring `RoundGroup`'s own custom name (e.g. "Sprint
+        /// Intervals"), if the user gave it one — otherwise this metadata
+        /// would be the only trace of a round group ever existing, since
+        /// `expand()` discards everything about the group except this.
+        public var groupName: String?
 
-        public init(round: Int, totalRounds: Int, set: Int, totalSets: Int) {
+        public init(round: Int, totalRounds: Int, set: Int, totalSets: Int, groupName: String? = nil) {
             self.round = round
             self.totalRounds = totalRounds
             self.set = set
             self.totalSets = totalSets
+            self.groupName = groupName
         }
     }
 

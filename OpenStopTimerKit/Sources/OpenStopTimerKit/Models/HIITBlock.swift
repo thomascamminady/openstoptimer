@@ -67,7 +67,8 @@ public enum HIITBlock: Codable, Hashable, Sendable, Identifiable {
                         round: round + 1,
                         totalRounds: group.rounds,
                         set: set + 1,
-                        totalSets: group.sets
+                        totalSets: group.sets,
+                        groupName: group.name
                     )
                     for (index, exercise) in group.exercises.enumerated() {
                         steps.append(exercise.copyForPlayback(withProgress: progress))

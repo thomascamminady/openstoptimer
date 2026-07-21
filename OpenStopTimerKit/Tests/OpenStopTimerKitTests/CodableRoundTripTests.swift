@@ -43,6 +43,18 @@ struct CodableRoundTripTests {
         #expect(decoded.hapticsEnabled == nil)
     }
 
+    /// `groupName` postdates the first shipped version of `RoundProgress` —
+    /// a workout saved/exported before it existed simply won't have the key,
+    /// and since it's an `Optional`, the synthesized decoder should default
+    /// it to `nil` rather than fail the whole decode.
+    @Test func decodingOlderRoundProgressWithoutGroupNameDefaultsToNil() throws {
+        let legacyJSON = Data(#"{"round":1,"totalRounds":10,"set":1,"totalSets":1}"#.utf8)
+        let decoded = try JSONDecoder().decode(WorkoutStep.RoundProgress.self, from: legacyJSON)
+        #expect(decoded.round == 1)
+        #expect(decoded.totalRounds == 10)
+        #expect(decoded.groupName == nil)
+    }
+
     @Test func lapRecordRoundTrips() throws {
         let lap = LapRecord(index: 1, lapTime: 12.34, cumulativeTime: 12.34)
         let data = try JSONEncoder().encode(lap)

@@ -128,12 +128,16 @@ struct HIITPlayerView: View {
 
     /// Shown on the big current-step display — only while a work step is
     /// active; during rest it's suppressed since rest isn't itself a round.
+    /// Leads with the interval's own custom name (e.g. "Sprint Intervals")
+    /// when the user gave it one — otherwise that name would never appear
+    /// anywhere outside the editor's own block list.
     private func activeProgressText(for step: WorkoutStep) -> String? {
         guard step.kind == .work, let progress = step.roundProgress else { return nil }
+        let namePrefix = progress.groupName.map { "\($0.uppercased()) · " } ?? ""
         if progress.totalSets > 1 {
-            return "SET \(progress.set)/\(progress.totalSets) · ROUND \(progress.round)/\(progress.totalRounds)"
+            return "\(namePrefix)SET \(progress.set)/\(progress.totalSets) · ROUND \(progress.round)/\(progress.totalRounds)"
         }
-        return "ROUND \(progress.round)/\(progress.totalRounds)"
+        return "\(namePrefix)ROUND \(progress.round)/\(progress.totalRounds)"
     }
 
     /// Shown on an upcoming-step chip — a work chip previews its round
