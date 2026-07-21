@@ -68,12 +68,22 @@ public struct MetronomeSettings: Codable, Hashable, Sendable {
         secondsIntoCycle == 0
     }
 
-    /// True at the configured lead/lag seconds around the mark (e.g. 41 and 1
-    /// for a 42s cycle with a 1s offset) — the "bip ... BEEP ... bip" warning
-    /// ticks either side of the main beep.
-    public func isWarningSecond(_ secondsIntoCycle: Int) -> Bool {
+    /// True at the lead second before the mark (e.g. 41 for a 42s cycle with
+    /// a 1s offset) — the "bip" warning that you're approaching the beep.
+    /// Split from the post-mark case below because the caller treats them
+    /// differently on the very first cycle (see `isPostMarkWarningSecond`).
+    public func isPreMarkWarningSecond(_ secondsIntoCycle: Int) -> Bool {
         guard offsetSeconds > 0 else { return false }
-        return secondsIntoCycle == offsetSeconds || secondsIntoCycle == cycleSeconds - offsetSeconds
+        return secondsIntoCycle == cycleSeconds - offsetSeconds
+    }
+
+    /// True at the lag second after the mark (e.g. 1 for a 1s offset) — the
+    /// "bip" warning that you've just passed the beep. Meaningless on the
+    /// very first cycle before any mark has actually fired yet, so the
+    /// caller only acts on this once it's seen at least one real mark.
+    public func isPostMarkWarningSecond(_ secondsIntoCycle: Int) -> Bool {
+        guard offsetSeconds > 0 else { return false }
+        return secondsIntoCycle == offsetSeconds
     }
 
     private static func clamp(_ value: Int, to range: ClosedRange<Int>) -> Int {

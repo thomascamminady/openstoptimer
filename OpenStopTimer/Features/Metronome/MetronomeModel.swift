@@ -5,10 +5,12 @@ import OpenStopTimerKit
 
 /// Drives a `MetronomeEngine` and translates its phase into sound/haptic
 /// events: short ticks for the last 3 seconds of a lead-in, a distinct "go"
-/// cue the instant a lead-in hands off to running, a stronger beep at the
+/// cue the instant a lead-in hands off to running, a longer beep at the
 /// cycle's 0-mark, and quieter warning ticks at the configured offset either
-/// side of it. Deliberately sound/haptics only — this app never schedules a
-/// system notification, so nothing here fires while backgrounded.
+/// side of it (suppressing the post-mark tick until a real mark has fired
+/// once, so the very first cycle doesn't get a spurious beep on its heels
+/// of the go cue). Deliberately sound/haptics only — this app never
+/// schedules a system notification, so nothing here fires while backgrounded.
 @MainActor
 @Observable
 final class MetronomeModel {
@@ -32,6 +34,12 @@ final class MetronomeModel {
     /// True once the "go" cue has fired for the current run — an immediate
     /// (no-lead-in) start marks this true up front so no cue plays at t=0.
     private var hasFiredGo = false
+    /// True once the main mark has fired at least once this run. The
+    /// post-mark warning tick (e.g. "1s after the mark") is meaningless
+    /// before that — it would otherwise fire ~`offsetSeconds` into the very
+    /// first cycle, right on the heels of the go cue, which reads as a
+    /// spurious extra beep rather than a warning about anything.
+    private var hasReachedFirstMark = false
 
     init(settings: MetronomeSettings, appearance: AppearanceConfig) {
         self.settings = settings
@@ -62,6 +70,13 @@ final class MetronomeModel {
         }
     }
 
+    /// One decimal place of `progressWithinSecond` (e.g. ".7") — a small
+    /// supplementary readout under the ring for anyone who wants a touch
+    /// more precision than the 3 coarse thirds the ring itself shows.
+    var decimalSecondText: String {
+        ".\(Int(progressWithinSecond * 10))"
+    }
+
     var accessibilityLabel: String {
         switch phase {
         case .idle: "Metronome set to \(settings.cycleSeconds) seconds"
@@ -87,6 +102,7 @@ final class MetronomeModel {
         lastAnnouncedLeadInSecond = nil
         lastAnnouncedCycleSecond = nil
         hasFiredGo = settings.leadInSeconds <= 0
+        hasReachedFirstMark = false
         engine.start(leadInSeconds: settings.leadInSeconds)
         syncFromEngine()
         startTicking()
@@ -110,6 +126,7 @@ final class MetronomeModel {
         lastAnnouncedLeadInSecond = nil
         lastAnnouncedCycleSecond = nil
         hasFiredGo = false
+        hasReachedFirstMark = false
     }
 
     private func startTicking() {
@@ -117,7 +134,12 @@ final class MetronomeModel {
         tickTask = Task { [weak self] in
             while let self, !Task.isCancelled {
                 self.syncFromEngine()
-                try? await Task.sleep(for: .milliseconds(100))
+                // 30ms rather than this app's usual 100-200ms tick interval:
+                // a beep is only as "on time" as the polling that detects
+                // the second boundary triggering it, and a runner pacing
+                // against this needs tighter timing than a phase-transition
+                // display does.
+                try? await Task.sleep(for: .milliseconds(30))
             }
         }
     }
@@ -151,9 +173,13 @@ final class MetronomeModel {
             guard secondsIntoCycle != lastAnnouncedCycleSecond else { break }
             lastAnnouncedCycleSecond = secondsIntoCycle
             if settings.isMarkSecond(secondsIntoCycle) {
-                play(.beepDouble)
+                hasReachedFirstMark = true
+                play(.beepLong)
                 fireHaptic(.heavy)
-            } else if settings.isWarningSecond(secondsIntoCycle) {
+            } else if settings.isPreMarkWarningSecond(secondsIntoCycle) {
+                play(.beepShort)
+                fireHaptic(.medium)
+            } else if hasReachedFirstMark, settings.isPostMarkWarningSecond(secondsIntoCycle) {
                 play(.beepShort)
                 fireHaptic(.medium)
             }

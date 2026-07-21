@@ -91,6 +91,7 @@ def _write_wav(samples: list[float], path: Path) -> None:
 def _sounds() -> dict[str, list[float]]:
     return {
         "beepShort": _tone(frequency=880, duration=0.15),
+        "beepLong": _tone(frequency=880, duration=0.4),
         "beepDouble": _tone(frequency=880, duration=0.12)
         + _silence(0.08)
         + _tone(frequency=880, duration=0.12),

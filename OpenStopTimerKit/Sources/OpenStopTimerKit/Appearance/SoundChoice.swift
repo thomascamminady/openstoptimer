@@ -4,6 +4,7 @@ import Foundation
 public enum SoundChoice: String, Codable, CaseIterable, Sendable, Identifiable {
     case none
     case beepShort
+    case beepLong
     case beepDouble
     case chime
     case bell
@@ -15,6 +16,7 @@ public enum SoundChoice: String, Codable, CaseIterable, Sendable, Identifiable {
         switch self {
         case .none: "None"
         case .beepShort: "Short Beep"
+        case .beepLong: "Long Beep"
         case .beepDouble: "Double Beep"
         case .chime: "Chime"
         case .bell: "Bell"

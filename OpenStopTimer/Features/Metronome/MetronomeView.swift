@@ -3,10 +3,11 @@ import OpenStopTimerKit
 
 /// A pacing aid for track running: one huge number counting up modulo the
 /// configured interval length (e.g. 0...41 for a 42s split), ringed by a
-/// sub-second progress arc, so a runner can hear (and, if they glance down,
-/// see roughly which third of the current second they're in) without ever
-/// needing a decimal readout. Deliberately minimal otherwise — no colors, no
-/// upcoming-steps strip, just the number plus Back / Settings / Play.
+/// sub-second progress arc (which third of the current second, coarse and
+/// color-coded) plus a small decimal-second readout underneath for anyone
+/// who wants finer precision. Deliberately minimal otherwise — just the
+/// number plus Back / Settings / Play, the last always centered regardless
+/// of whether Settings is showing.
 struct MetronomeView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(AppState.self) private var appState
@@ -47,15 +48,28 @@ struct MetronomeView: View {
 
     private var display: some View {
         GeometryReader { proxy in
-            let side = max(0, min(proxy.size.width, proxy.size.height) - 24)
+            let decimalLabelHeight: CGFloat = 32
+            let side = max(0, min(proxy.size.width, proxy.size.height - decimalLabelHeight) - 24)
             let ringWidth = max(10, side * 0.035)
-            ZStack {
-                SubSecondProgressRing(progress: model.progressWithinSecond, lineWidth: ringWidth)
-                FillHeightText(text: model.displayNumber, fillFraction: 0.65)
-                    .padding(ringWidth * 2.5)
+            VStack(spacing: 4) {
+                ZStack {
+                    SubSecondProgressRing(progress: model.progressWithinSecond, lineWidth: ringWidth)
+                    FillHeightText(text: model.displayNumber, fillFraction: 0.65)
+                        .padding(ringWidth * 2.5)
+                }
+                .foregroundStyle(.primary)
+                .frame(width: side, height: side)
+
+                // A touch more precision than the ring's 3 coarse thirds,
+                // for anyone who wants it — reserved space stays constant
+                // (just hidden pre-start) so the ring/number don't shift.
+                Text(model.decimalSecondText)
+                    .font(.system(size: decimalLabelHeight * 0.55, design: .default))
+                    .foregroundStyle(.secondary)
+                    .monospacedDigit()
+                    .opacity(model.hasStarted ? 1 : 0)
+                    .accessibilityHidden(true)
             }
-            .foregroundStyle(.primary)
-            .frame(width: side, height: side)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             // UI tests read the raw digits back via `.value` (same
             // convention as `BigTimeText`), keeping `.label` a
@@ -68,16 +82,19 @@ struct MetronomeView: View {
     }
 
     private var controls: some View {
-        HStack(spacing: 28) {
-            circularButton(systemImage: "chevron.left", identifier: "metronome.backButton") {
-                dismiss()
-            }
-            if !model.hasStarted {
-                circularButton(systemImage: "gearshape", identifier: "metronome.settingsButton") {
-                    isEditingSettings = true
+        ZStack {
+            primaryButton
+            HStack {
+                circularButton(systemImage: "chevron.left", identifier: "metronome.backButton") {
+                    dismiss()
+                }
+                Spacer()
+                if !model.hasStarted {
+                    circularButton(systemImage: "gearshape", identifier: "metronome.settingsButton") {
+                        isEditingSettings = true
+                    }
                 }
             }
-            primaryButton
         }
     }
 

@@ -1,9 +1,11 @@
 import SwiftUI
 
 /// A ring split into 3 fixed thirds (12-4, 4-8, 8-12 o'clock), each its own
-/// color, with only the current third lit up — deliberately coarse
-/// (updates 3x/second, not continuously) since a runner glancing down needs
-/// "early / on pace / late," not a precise sweep.
+/// color, filling up cumulatively as the second progresses — green, then
+/// green+yellow, then green+yellow+red — rather than only ever lighting one
+/// segment at a time. Deliberately coarse (updates 3x/second, not
+/// continuously) since a runner glancing down needs "early / on pace /
+/// late," not a precise sweep.
 struct SubSecondProgressRing: View {
     /// 0..<1, where the current second started.
     var progress: Double
@@ -34,7 +36,7 @@ struct SubSecondProgressRing: View {
         return Circle()
             .trim(from: start, to: end)
             .stroke(
-                Self.segmentColors[index].opacity(index == activeSegment ? 1 : 0.15),
+                Self.segmentColors[index].opacity(index <= activeSegment ? 1 : 0.15),
                 style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
             )
             .rotationEffect(.degrees(-90))

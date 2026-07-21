@@ -34,18 +34,24 @@ struct MetronomeSettingsTests {
         #expect(!settings.isMarkSecond(41))
     }
 
-    @Test func isWarningSecondAtOffsetBeforeAndAfterTheMark() {
+    @Test func isPreMarkWarningSecondOnlyAtTheLeadSecond() {
         let settings = MetronomeSettings(cycleSeconds: 42, offsetSeconds: 1)
-        #expect(settings.isWarningSecond(41), "1s before the 42s mark")
-        #expect(settings.isWarningSecond(1), "1s after the mark")
-        #expect(!settings.isWarningSecond(0))
-        #expect(!settings.isWarningSecond(20))
+        #expect(settings.isPreMarkWarningSecond(41), "1s before the 42s mark")
+        #expect(!settings.isPreMarkWarningSecond(1))
+        #expect(!settings.isPreMarkWarningSecond(0))
+    }
+
+    @Test func isPostMarkWarningSecondOnlyAtTheLagSecond() {
+        let settings = MetronomeSettings(cycleSeconds: 42, offsetSeconds: 1)
+        #expect(settings.isPostMarkWarningSecond(1), "1s after the mark")
+        #expect(!settings.isPostMarkWarningSecond(41))
+        #expect(!settings.isPostMarkWarningSecond(0))
     }
 
     @Test func zeroOffsetMeansNoWarningTicks() {
         let settings = MetronomeSettings(cycleSeconds: 42, offsetSeconds: 0)
-        #expect(!settings.isWarningSecond(41))
-        #expect(!settings.isWarningSecond(1))
+        #expect(!settings.isPreMarkWarningSecond(41))
+        #expect(!settings.isPostMarkWarningSecond(1))
     }
 
     @Test func initClampsLeadInSecondsToValidRange() {
