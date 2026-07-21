@@ -18,11 +18,22 @@ struct AdaptiveTimerLayout<Display: View, Controls: View>: View {
     var body: some View {
         if verticalSizeClass == .compact {
             HStack(spacing: 0) {
+                // Explicit layout priorities, not just relative frame
+                // flexibility: `controls()` is resolved to its natural
+                // intrinsic width *first* (whatever that needs — a single
+                // play button vs. HIIT's full skip/pause/skip + Back/Replay
+                // rows are very different widths, and some of those
+                // internally use `Spacer()`/`.infinity` too), then `display()`
+                // unconditionally absorbs everything left over. Without this,
+                // two same-priority infinity-flexible siblings would just
+                // split the space evenly instead.
                 display()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .layoutPriority(-1)
                 controls()
-                    .frame(width: 160)
+                    .frame(minWidth: 200)
                     .padding()
+                    .layoutPriority(1)
             }
         } else {
             VStack(spacing: 0) {

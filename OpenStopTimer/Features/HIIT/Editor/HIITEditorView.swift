@@ -193,15 +193,19 @@ private struct AddBlockButton: View {
 
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 6) {
+            VStack(spacing: 8) {
                 Image(systemName: systemImage)
-                    .font(.system(size: 22, weight: .semibold))
+                    .font(.system(size: 26, weight: .semibold))
                 Text(title)
-                    .font(.caption.weight(.medium))
+                    .font(.callout.weight(.medium))
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 14)
-            .background(.tint.opacity(0.15), in: RoundedRectangle(cornerRadius: 14))
+            .padding(.vertical, 18)
+            .background(.tint.opacity(0.15), in: RoundedRectangle(cornerRadius: 16))
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .strokeBorder(.tint.opacity(0.35), lineWidth: 1.5)
+            )
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier(identifier)

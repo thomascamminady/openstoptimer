@@ -141,6 +141,44 @@ final class HIITTests: UITestCase {
         XCTAssertFalse(app.staticTexts["currentStep.progressText"].exists, "Round badge should be hidden during rest")
     }
 
+    /// Regression test: adding a Warm Up *after* an interval used to leave
+    /// it appended at the end of the workout instead of at the start.
+    func testAddingWarmUpAfterAnIntervalPlacesItAtTheStart() {
+        openHIITLibrary()
+        app.buttons["hiitLibrary.addButton"].tap()
+
+        let nameField = app.textFields["hiitEditor.nameField"]
+        XCTAssertTrue(nameField.waitForExistence(timeout: 20))
+        replaceText(in: nameField, with: "UI Test Ordering")
+
+        // Interval first...
+        app.buttons["hiitEditor.addRoundGroup"].tap()
+        let doneButton = app.buttons["blockEditor.doneButton"]
+        XCTAssertTrue(doneButton.waitForExistence(timeout: 20), "Adding an interval should auto-open its editor")
+        doneButton.tap()
+
+        // ...then the warm-up, added second but expected to land first.
+        app.buttons["hiitEditor.addWarmup"].tap()
+
+        // Matching bare "Warm Up" is ambiguous — the add-tile button itself
+        // is also labeled exactly "Warm Up". The Steps-list row's combined
+        // accessibility label includes the duration ("Warm Up, 60s"), which
+        // the add-tile's doesn't, so match on that instead.
+        let warmupRow = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Warm Up,'")).firstMatch
+        XCTAssertTrue(warmupRow.waitForExistence(timeout: 10))
+        // An exact match, not `CONTAINS` — the "Add Block" section's footer
+        // text ("...e.g. \"3x10\" for 3 sets of 10 rounds.") also contains
+        // the substring "rounds" and sits above the Steps section, so a
+        // loose match picks that up instead of the actual list row.
+        let intervalRow = app.staticTexts.matching(NSPredicate(format: "label == %@", "10 rounds")).firstMatch
+        XCTAssertTrue(intervalRow.waitForExistence(timeout: 10))
+
+        XCTAssertLessThan(
+            warmupRow.frame.minY, intervalRow.frame.minY,
+            "Warm Up should be listed above the interval regardless of the order they were added in"
+        )
+    }
+
     func testSwipeToDeleteRemovesWorkout() {
         let row = createWorkout(named: "UI Test Deletable")
         row.swipeLeft()

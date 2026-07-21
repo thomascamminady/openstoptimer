@@ -72,7 +72,7 @@ struct HIITPlayerView: View {
                 // library (replacing the now-hidden nav bar's back chevron),
                 // "Replay" restarts the same workout from the top.
                 if model.hasStarted {
-                    HStack(spacing: 40) {
+                    HStack(spacing: 20) {
                         exitReplayButton(title: "Back", systemImage: "chevron.left", identifier: "hiitPlayer.backButton") {
                             dismiss()
                         }
@@ -88,9 +88,10 @@ struct HIITPlayerView: View {
     private func exitReplayButton(title: String, systemImage: String, identifier: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Label(title, systemImage: systemImage)
-                .font(.subheadline.weight(.semibold))
+                .font(.body.weight(.semibold))
         }
         .buttonStyle(.bordered)
+        .controlSize(.large)
         .accessibilityIdentifier(identifier)
     }
 

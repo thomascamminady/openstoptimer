@@ -9,7 +9,7 @@ struct LapStopwatchView: View {
         AdaptiveTimerLayout {
             display
         } controls: {
-            HStack(spacing: 28) {
+            HStack(spacing: 32) {
                 lapOrResetButton
                 PlayerControls(hasStarted: model.hasStarted, isPaused: model.isPaused, showsReset: false, onPrimary: primaryAction)
             }
@@ -62,26 +62,14 @@ struct LapStopwatchView: View {
     @ViewBuilder
     private var lapOrResetButton: some View {
         if model.hasStarted, !model.isRunning {
-            Button(action: model.reset) {
-                secondaryLabel(systemImage: "arrow.counterclockwise")
-            }
-            .accessibilityIdentifier("lapStopwatch.reset")
+            CircularIconButton(systemImage: "arrow.counterclockwise", style: .secondary, action: model.reset)
+                .accessibilityIdentifier("lapStopwatch.reset")
         } else {
-            Button(action: model.recordLap) {
-                secondaryLabel(systemImage: "flag.fill")
-            }
-            .disabled(!model.isRunning)
-            .opacity(model.isRunning ? 1 : 0.3)
-            .accessibilityIdentifier("lapStopwatch.lap")
+            CircularIconButton(systemImage: "flag.fill", style: .secondary, action: model.recordLap)
+                .disabled(!model.isRunning)
+                .opacity(model.isRunning ? 1 : 0.3)
+                .accessibilityIdentifier("lapStopwatch.lap")
         }
-    }
-
-    private func secondaryLabel(systemImage: String) -> some View {
-        Image(systemName: systemImage)
-            .font(.system(size: 18, weight: .semibold))
-            .foregroundStyle(.primary)
-            .frame(width: 52, height: 52)
-            .background(Circle().fill(.thinMaterial))
     }
 
     private func primaryAction() {

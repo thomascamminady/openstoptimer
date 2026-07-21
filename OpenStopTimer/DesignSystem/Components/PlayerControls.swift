@@ -14,7 +14,7 @@ struct PlayerControls: View {
     var onSkipForward: (() -> Void)?
 
     var body: some View {
-        HStack(spacing: 28) {
+        HStack(spacing: 32) {
             if showsReset, hasStarted {
                 secondaryButton(systemImage: "arrow.counterclockwise", action: onReset)
                     .accessibilityIdentifier("playerControls.reset")
@@ -23,25 +23,14 @@ struct PlayerControls: View {
                 secondaryButton(systemImage: "backward.end.fill", action: onSkipBack)
                     .accessibilityIdentifier("playerControls.skipBack")
             }
-            primaryButton
+            CircularIconButton(systemImage: primaryIcon, style: .primary(color: primaryColor), action: onPrimary)
+                .accessibilityLabel(primaryAccessibilityLabel)
+                .accessibilityIdentifier("playerControls.primary")
             if showsSkip {
                 secondaryButton(systemImage: "forward.end.fill", action: onSkipForward)
                     .accessibilityIdentifier("playerControls.skipForward")
             }
         }
-    }
-
-    private var primaryButton: some View {
-        Button(action: onPrimary) {
-            Image(systemName: primaryIcon)
-                .font(.system(size: 30, weight: .bold))
-                .foregroundStyle(.white)
-                .frame(width: 80, height: 80)
-                .background(Circle().fill(primaryColor))
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(primaryAccessibilityLabel)
-        .accessibilityIdentifier("playerControls.primary")
     }
 
     private var primaryIcon: String {
@@ -57,16 +46,9 @@ struct PlayerControls: View {
     }
 
     private func secondaryButton(systemImage: String, action: (() -> Void)?) -> some View {
-        Button {
+        CircularIconButton(systemImage: systemImage, style: .secondary) {
             action?()
-        } label: {
-            Image(systemName: systemImage)
-                .font(.system(size: 18, weight: .semibold))
-                .foregroundStyle(.primary)
-                .frame(width: 52, height: 52)
-                .background(Circle().fill(.thinMaterial))
         }
-        .buttonStyle(.plain)
         .disabled(action == nil)
         .opacity(action == nil ? 0.3 : 1)
     }
