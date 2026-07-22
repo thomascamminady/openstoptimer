@@ -83,22 +83,26 @@ struct MetronomeView: View {
     }
 
     private var controls: some View {
-        ZStack {
+        // A fixed-width trailing slot (real settings button, or an
+        // invisible placeholder the same size) rather than a `Spacer()` —
+        // that keeps the primary button visually centered between Back and
+        // Settings without ever asking for unbounded width, which in
+        // landscape would otherwise fight the display for space.
+        HStack(spacing: 16) {
+            CircularIconButton(systemImage: "chevron.left", style: .secondary) {
+                dismiss()
+            }
+            .accessibilityIdentifier("metronome.backButton")
             CircularIconButton(systemImage: primaryIcon, style: .primary(color: primaryColor), action: primaryAction)
                 .accessibilityLabel(primaryAccessibilityLabel)
                 .accessibilityIdentifier("metronome.primaryButton")
-            HStack {
-                CircularIconButton(systemImage: "chevron.left", style: .secondary) {
-                    dismiss()
+            if !model.hasStarted {
+                CircularIconButton(systemImage: "gearshape", style: .secondary) {
+                    isEditingSettings = true
                 }
-                .accessibilityIdentifier("metronome.backButton")
-                Spacer()
-                if !model.hasStarted {
-                    CircularIconButton(systemImage: "gearshape", style: .secondary) {
-                        isEditingSettings = true
-                    }
-                    .accessibilityIdentifier("metronome.settingsButton")
-                }
+                .accessibilityIdentifier("metronome.settingsButton")
+            } else {
+                Color.clear.frame(width: 64, height: 64)
             }
         }
     }

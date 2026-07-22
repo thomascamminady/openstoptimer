@@ -4,6 +4,7 @@ import OpenStopTimerKit
 struct HIITPlayerView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
     @Environment(AppState.self) private var appState
     @State private var model: HIITPlayerModel
     @State private var isEditingWorkout = false
@@ -58,41 +59,42 @@ struct HIITPlayerView: View {
     @ViewBuilder
     private var controlsView: some View {
         if !model.isFinished {
+            // In landscape, PlayerControls stacks its 3 buttons vertically
+            // instead of in a row — a horizontal 3-wide row (plus the
+            // Back/Replay row below it) was eating up to half the screen's
+            // *width*, squeezing the display — and, since BigTimeText fits
+            // itself to whatever box it's given, squeezing the countdown
+            // number itself right along with it.
+            let isLandscape = verticalSizeClass == .compact
             VStack(spacing: 16) {
                 PlayerControls(
                     hasStarted: model.hasStarted,
                     isPaused: model.isPaused,
                     showsSkip: model.hasStarted,
                     showsReset: false,
+                    axis: isLandscape ? .vertical : .horizontal,
                     onPrimary: primaryAction,
                     onSkipBack: model.skipPrevious,
                     onSkipForward: model.skipNext
                 )
-                // A second row below skip/pause/skip — "Back" exits to the
-                // library (replacing the now-hidden nav bar's back chevron),
-                // "Replay" restarts the same workout from the top.
+                // "Back" exits to the library (replacing the now-hidden nav
+                // bar's back chevron), "Replay" restarts the workout from
+                // the top — plain icon buttons, not text-labeled ones, so
+                // this row stays narrow in landscape too.
                 if model.hasStarted {
                     HStack(spacing: 20) {
-                        exitReplayButton(title: "Back", systemImage: "chevron.left", identifier: "hiitPlayer.backButton") {
+                        CircularIconButton(systemImage: "chevron.left", style: .secondary) {
                             dismiss()
                         }
-                        exitReplayButton(title: "Replay", systemImage: "arrow.counterclockwise", identifier: "playerControls.reset") {
+                        .accessibilityIdentifier("hiitPlayer.backButton")
+                        CircularIconButton(systemImage: "arrow.counterclockwise", style: .secondary) {
                             model.reset()
                         }
+                        .accessibilityIdentifier("playerControls.reset")
                     }
                 }
             }
         }
-    }
-
-    private func exitReplayButton(title: String, systemImage: String, identifier: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Label(title, systemImage: systemImage)
-                .font(.body.weight(.semibold))
-        }
-        .buttonStyle(.bordered)
-        .controlSize(.large)
-        .accessibilityIdentifier(identifier)
     }
 
     @ViewBuilder

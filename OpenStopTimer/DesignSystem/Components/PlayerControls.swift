@@ -7,6 +7,11 @@ struct PlayerControls: View {
     let isPaused: Bool
     var showsSkip: Bool = false
     var showsReset: Bool = true
+    /// `.horizontal` (default) for portrait's full-width bar; `.vertical`
+    /// stacks the same buttons top-to-bottom instead, for landscape's
+    /// narrow side column — a 3-wide row doesn't fit there without eating
+    /// space the display needs.
+    var axis: Axis = .horizontal
 
     let onPrimary: () -> Void
     var onReset: (() -> Void)?
@@ -14,22 +19,31 @@ struct PlayerControls: View {
     var onSkipForward: (() -> Void)?
 
     var body: some View {
-        HStack(spacing: 32) {
-            if showsReset, hasStarted {
-                secondaryButton(systemImage: "arrow.counterclockwise", action: onReset)
-                    .accessibilityIdentifier("playerControls.reset")
+        Group {
+            if axis == .horizontal {
+                HStack(spacing: 32) { buttons }
+            } else {
+                VStack(spacing: 20) { buttons }
             }
-            if showsSkip {
-                secondaryButton(systemImage: "backward.end.fill", action: onSkipBack)
-                    .accessibilityIdentifier("playerControls.skipBack")
-            }
-            CircularIconButton(systemImage: primaryIcon, style: .primary(color: primaryColor), action: onPrimary)
-                .accessibilityLabel(primaryAccessibilityLabel)
-                .accessibilityIdentifier("playerControls.primary")
-            if showsSkip {
-                secondaryButton(systemImage: "forward.end.fill", action: onSkipForward)
-                    .accessibilityIdentifier("playerControls.skipForward")
-            }
+        }
+    }
+
+    @ViewBuilder
+    private var buttons: some View {
+        if showsReset, hasStarted {
+            secondaryButton(systemImage: "arrow.counterclockwise", action: onReset)
+                .accessibilityIdentifier("playerControls.reset")
+        }
+        if showsSkip {
+            secondaryButton(systemImage: "backward.end.fill", action: onSkipBack)
+                .accessibilityIdentifier("playerControls.skipBack")
+        }
+        CircularIconButton(systemImage: primaryIcon, style: .primary(color: primaryColor), action: onPrimary)
+            .accessibilityLabel(primaryAccessibilityLabel)
+            .accessibilityIdentifier("playerControls.primary")
+        if showsSkip {
+            secondaryButton(systemImage: "forward.end.fill", action: onSkipForward)
+                .accessibilityIdentifier("playerControls.skipForward")
         }
     }
 
